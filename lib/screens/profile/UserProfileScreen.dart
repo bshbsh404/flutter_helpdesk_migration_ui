@@ -369,19 +369,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future cropImage(BuildContext context, String filePath) async {
-    File croppedFile = await ImageCropper.cropImage(
+    CroppedFile croppedFile = await ImageCropper().cropImage(
         sourcePath: filePath,
         aspectRatioPresets: setAspectRatios(),
-        androidUiSettings: AndroidUiSettings(
+        uiSettings: [        
+          AndroidUiSettings(
           toolbarTitle: 'Crop your image',
           toolbarColor: primaryColor,
           toolbarWidgetColor: Colors.white,
           initAspectRatio: CropAspectRatioPreset.original,
           lockAspectRatio: false,
         ),
-        iosUiSettings: IOSUiSettings(
+        IOSUiSettings(
           title: 'Crop your image',
-        ));
+        )],
+);
     if (croppedFile != null) {
       setState(() {
         imageFile = File(croppedFile.path ?? "");
