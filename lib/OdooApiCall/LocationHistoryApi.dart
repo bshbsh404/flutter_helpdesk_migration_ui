@@ -1,6 +1,6 @@
 // TODO Implement this library.import 'dart:convert';
 import 'package:odoo_rpc/odoo_rpc.dart';
-import '../data/LocationHistory.dart';
+import '../OdooApiCall_DataMapping/LocationHistory.dart';
 
   
 //might need to import session id here, to get user id, to get to filter.

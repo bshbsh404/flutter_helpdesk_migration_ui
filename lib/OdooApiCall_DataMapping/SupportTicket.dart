@@ -14,10 +14,10 @@ class SupportTicket {
   
   const SupportTicket({
   
-    required this.ticket_number,required this.ticket_id,required this.assigned_user, 
-    required this.check_in,required this.check_out,required this.check_in_address, required this.check_out_address,
-    required this.subject, required this.created_date, required this.rating, required this.customer_name,
-    required this.equipment_location,
+    this.ticket_number, this.ticket_id, this.assigned_user, 
+    this.check_in, this.check_out, this.check_in_address, this.check_out_address,
+    this.subject, this.created_date, this.rating, this.customer_name,
+    this.equipment_location,
   });
   static SupportTicket fromJson(Map<String, dynamic> json) => SupportTicket(
     // if it returns false, because idontknow, odoo return false for null in JSON, 

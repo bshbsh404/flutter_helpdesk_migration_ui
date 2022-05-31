@@ -12,11 +12,11 @@ class LocationHistory {
 
 
   const LocationHistory({
-   required this.check_in,
-   required this.check_in_address,
-   required this.check_out,
-   required this.check_out_address, 
-   required this.ticket_id, 
+   this.check_in,
+   this.check_in_address,
+   this.check_out,
+   this.check_out_address, 
+   this.ticket_id, 
    //required this.check_in_lat, 
    //required this.check_in_long, 
    //required this.check_out_lat, 

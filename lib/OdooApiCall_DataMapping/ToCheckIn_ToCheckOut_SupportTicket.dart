@@ -6,7 +6,7 @@ class ToCheckInOutSupportTicket {
   final String check_in;
   final String check_out;
 
-  const ToCheckInOutSupportTicket({required this.ticket_number, required this.status, required this.check_in, required this.check_out});
+  const ToCheckInOutSupportTicket({this.ticket_number, this.status, this.check_in, this.check_out});
 
   static ToCheckInOutSupportTicket fromJson(Map<String, dynamic> json) => ToCheckInOutSupportTicket(
     // if it returns false, because idontknow, odoo return false for null in JSON, 

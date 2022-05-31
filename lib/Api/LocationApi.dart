@@ -2,7 +2,7 @@ import 'package:location/location.dart';
 
 class LocationService{
   Location location=Location ();
-  late LocationData _locData;
+  LocationData _locData;
 
 
   Future<void> initialize() async{
@@ -29,12 +29,12 @@ class LocationService{
 
   }
 
-  Future<double?> getLatitude() async{
+  Future<double> getLatitude() async{
     _locData = await location.getLocation();
     return _locData.latitude;
   } 
 
-  Future<double?> getLongitude() async{
+  Future<double> getLongitude() async{
   _locData = await location.getLocation ();
   return _locData.longitude;
   }

@@ -2,7 +2,7 @@ class ClosedSupportTicket {
   final String ticket_number;
   final String status;
 
-  const ClosedSupportTicket({required this.ticket_number, required this.status});
+  const ClosedSupportTicket({this.ticket_number, this.status});
 
   static ClosedSupportTicket fromJson(Map<String, dynamic> json) => ClosedSupportTicket(
     // if it returns false, because idontknow, odoo return false for null in JSON, 

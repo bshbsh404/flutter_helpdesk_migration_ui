@@ -4,11 +4,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
-import '../data/SupportTicket.dart';
+import '../OdooApiCall_DataMapping/SupportTicket.dart';
 
 class PdfApi {
   static Future<File> generatePDF(
-    { ByteData? imageSignature, supportTicket}
+    { ByteData imageSignature, supportTicket}
   
   
   ) async {
@@ -16,7 +16,7 @@ class PdfApi {
     final page = document.pages.add();
 
     drawGrid(page, supportTicket );
-    drawSignature(page, imageSignature!);
+    drawSignature(page, imageSignature);
     return saveFile (document);
   }
 
@@ -134,7 +134,7 @@ class PdfApi {
     }
     //Draw grid and get drawn bounds
     final PdfLayoutResult result =
-        headerGrid.draw(page: page, bounds: const Rect.fromLTWH(1, 1, 0, 0))!;
+        headerGrid.draw(page: page, bounds: const Rect.fromLTWH(1, 1, 0, 0));
 
     //Create a new grid
     PdfGrid contentGrid = PdfGrid();

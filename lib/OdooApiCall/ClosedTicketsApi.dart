@@ -1,5 +1,5 @@
 import 'package:odoo_rpc/odoo_rpc.dart';
-import '../data/ClosedSupportTicket.dart';
+import '../OdooApiCall_DataMapping//ClosedSupportTicket.dart';
 
 
   
