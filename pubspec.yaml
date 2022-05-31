@@ -46,6 +46,11 @@ dependencies:
   intl: ^0.17.0
   provider: ^6.0.3
   shared_preferences: ^2.0.6
+  odoo_rpc: ^0.5.1
+  get: ^4.6.5
+  syncfusion_flutter_pdf: ^20.1.58-beta
+  path_provider: ^2.0.10
+  location: ^4.4.0
 
 dev_dependencies:
   flutter_test:

@@ -13,12 +13,12 @@ import 'package:shopping_app_ui/util/size_config.dart';
 import 'package:shopping_app_ui/widgets/Styles.dart';
 import 'package:shopping_app_ui/util/Util.dart';
 
-class MyFavoriteScreen extends StatefulWidget {
+class MyTicketScreen extends StatefulWidget {
   @override
-  _MyFavoriteScreenState createState() => _MyFavoriteScreenState();
+  _MyTicketScreenState createState() => _MyTicketScreenState();
 }
 
-class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
+class _MyTicketScreenState extends State<MyTicketScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +27,7 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
           : Theme.of(context).backgroundColor,
       appBar: buildAppBar(
         context,
-        myFavoriteLabel,
+        myTicketLabel,
         onBackPress: () {
           final CurvedNavigationBarState navState = getNavState();
           navState.setPage(0);
@@ -42,14 +42,14 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
                 SizedBox(
                   height: getProportionateScreenWidth(10.0),
                 ),
-                myFavoriteProducts.length > 0
+                myTicketProducts.length > 0
                     ? ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        itemCount: myFavoriteProducts.length,
+                        itemCount: myTicketProducts.length,
                         itemBuilder: (context, index) {
-                          return buildFavoriteProduct(
-                            myFavoriteProducts[index],
+                          return buildTicketProduct(
+                            myTicketProducts[index],
                           );
                         },
                       )
@@ -67,7 +67,7 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
                             ),
                           ),
                           Text(
-                            'No products in Favourite List!',
+                            'No tickets found!',
                             style: Theme.of(context).textTheme.headline6,
                           )
                         ],
@@ -80,7 +80,7 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
     );
   }
 
-  Widget buildFavoriteProduct(Product product) {
+  Widget buildTicketProduct(Product product) {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: getProportionateScreenWidth(16),
@@ -188,7 +188,7 @@ class _MyFavoriteScreenState extends State<MyFavoriteScreen> {
                     onTap: () {
                       setState(
                         () {
-                          myFavoriteProducts.remove(product);
+                          myTicketProducts.remove(product);
                         },
                       );
                     },

@@ -115,7 +115,7 @@ const String newArrivals = 'New Arrivals';
 const String home = 'Home';
 const String allCategories = 'All Categories';
 const String myOrdersLabel = 'My Orders';
-const String myFavoriteLabel = 'My Favorites';
+const String myTicketLabel = 'My Tickets';
 const String myCart = 'My Cart';
 const String privacyPolicy = 'Privacy Policy';
 const String aboutUs = 'About Us';
@@ -249,7 +249,7 @@ const String tagShopForMen = 'tag_shop_for_men_';
 const String tagShopForWomen = 'tag_shop_for_women_';
 const String tagStayHealthy = 'tag_stay_healthy_';
 const String tagAllProducts = 'tag_all_products_';
-const String tagSimilarProducts = 'tag_similar_products_';
+const String tagSimilarProducts = 'tag_similar_products';
 
 const String imageDialogTitle = 'Select image from:';
 const String imageDialogDesc = 'Please select image from camera or gallery';

@@ -1,6 +1,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
 import 'package:shopping_app_ui/constant/Constants.dart';
 import 'package:shopping_app_ui/screens/launch/HomeScreen.dart';
@@ -8,6 +9,14 @@ import 'package:shopping_app_ui/util/size_config.dart';
 import 'package:shopping_app_ui/widgets/Styles.dart';
 import 'package:shopping_app_ui/screens/authentication/ForgotPasswordScreen.dart';
 import 'package:shopping_app_ui/util/Util.dart';
+
+//create a global variable because, sometimes we need a global variable.
+//using client and session will not cause security issues on global by the way, it is only used for calling data from API.
+//alternative would be to passvalue using stateful widget when passing in navigation.
+
+var globalClient = OdooClient('http://10.0.0.226:8069');
+var globalSession;
+
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -50,6 +59,14 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  Future<void> checkOdooSession () async {
+    try {
+      await globalClient.checkSession();
+    } on OdooSessionExpiredException {
+      print('Session expired');
+    }
+  }
+
   void setUnAuthFlagFalse() {
     setState(() {
       isUnAuthFlag = false;
@@ -61,10 +78,12 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     focusNodeEmail.addListener(onFocusChanged);
     focusNodePassword.addListener(onFocusChanged);
+    
 
     // INFO: dummy username and password
     email.text = demoEmail;
     password.text = demoPassword;
+    checkOdooSession();
   }
 
   @override
@@ -338,7 +357,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void checkValidations() {
+  Future<void> checkValidations() async {
     if (email.text.isEmpty) {
       isDisplayEmailErrorNotification = true;
       isDisplayErrorNotification = false;
@@ -361,12 +380,65 @@ class _LoginScreenState extends State<LoginScreen> {
         setUnAuthFlagFalse();
       }
       hideKeyboard(context);
+      
       setState(() {
         showLoadingIndicator = true;
       });
-      Future.delayed(Duration(milliseconds: 500), () {
+
+      try {
+        
+        globalClient =
+            OdooClient('http://10.0.0.226:8069');
+            //OdooClient('http://192.168.0.123:8069');
+        
+
+        globalSession = await globalClient.authenticate(
+            'sigmarectrix.com', email.text, password.text);
+
+        ScaffoldMessenger.of(context).clearMaterialBanners();
+        
         navigateAndClearHistory(context, HomeScreen.routeName);
-      });
+        
+        /*Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  MyHomePage(client, session)),
+          (Route<dynamic> route) => false,
+        );
+        */
+      } on OdooException catch (e) {
+        setState(() {
+          showLoadingIndicator = false;
+        });
+        print(e);
+        ScaffoldMessenger.of(context)
+            .showMaterialBanner(MaterialBanner(
+          backgroundColor: Colors.yellow,
+          content: const Text(
+            "Invalid Email or Password",
+            style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                ),
+
+          ),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).clearMaterialBanners();
+                },
+                child: const Text("Dismiss",
+                style: TextStyle(
+                  fontStyle: FontStyle.normal,
+                  fontWeight: FontWeight.bold,
+                ),
+                )
+
+                )
+          ],
+        ));
+      }     
     }
   }
 

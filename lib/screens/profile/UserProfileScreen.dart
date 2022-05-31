@@ -15,6 +15,7 @@ import 'package:shopping_app_ui/util/size_config.dart';
 import 'package:shopping_app_ui/widgets/Styles.dart';
 import 'package:shopping_app_ui/util/Util.dart';
 
+import '../authentication/LoginScreen.dart';
 import 'AccountInfoScreen.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -256,6 +257,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     'Are you sure you want to logout?',
                     onOkPress: () {
                       Navigator.of(context).pop();
+                      globalClient.destroySession(); //destroy our global session here.
+                      
                       Future.delayed(Duration(milliseconds: 200), () {
                         navigateAndClearHistory(context, '/LoginScreen');
                       });

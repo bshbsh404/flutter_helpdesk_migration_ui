@@ -94,7 +94,7 @@ class _AddedToFavouriteScreenState extends State<AddedToFavouriteScreen> {
                 2,
                 8,
                 onPressed: () {
-                  navigateAndReplaceScreen(context, '/MyFavoriteScreen');
+                  navigateAndReplaceScreen(context, '/MyTicketScreen');
                 },
               ),
               SizedBox(

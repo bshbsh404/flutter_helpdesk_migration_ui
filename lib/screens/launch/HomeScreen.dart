@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:shopping_app_ui/Data/CategoryData.dart';
 import 'package:shopping_app_ui/Data/NotificationData.dart';
 import 'package:shopping_app_ui/Data/ProductData.dart';
@@ -11,7 +12,7 @@ import 'package:shopping_app_ui/constant/Constants.dart';
 import 'package:shopping_app_ui/global_keys/navbar_key.dart';
 import 'package:shopping_app_ui/model/Product.dart';
 import 'package:shopping_app_ui/model/ProductInCart.dart';
-import 'package:shopping_app_ui/screens/products/MyFavoriteScreen.dart';
+import 'package:shopping_app_ui/screens/products/MyTicketScreen.dart';
 import 'package:shopping_app_ui/screens/settings/SettingsScreen.dart';
 import 'package:shopping_app_ui/util/RemoveGlowEffect.dart';
 import 'package:shopping_app_ui/util/size_config.dart';
@@ -32,7 +33,12 @@ import '../notifications/NotificationsScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   static String routeName = '/home';
+  final OdooClient client;
+  final OdooSession session;
+  
   static int cartItemCount = myCartData.length;
+
+  const HomeScreen({Key key, this.client, this.session}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -201,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen>
         return AllCategoriesScreen();
         break;
       case 2:
-        return MyFavoriteScreen();
+        return MyTicketScreen();
         break;
       case 3:
         return SettingsScreen(

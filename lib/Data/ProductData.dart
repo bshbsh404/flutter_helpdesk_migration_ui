@@ -90,7 +90,7 @@ var similarProductData = [
   Product('demo_image.png', 'Set of Eyeliners', false, 4.5, 3, 0, false),
 ];
 
-var myFavoriteProducts = [
+var myTicketProducts = [
   Product('demo_image.png', 'iPhone 11 Pro', false, 5.0, 499, 20, false),
   Product('demo_image.png', 'Flora Aloe vera with bucket ', false, 5.0, 2, 0,
       false),

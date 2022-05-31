@@ -30,6 +30,10 @@ void navigateAndReplaceScreen(BuildContext context, String destination) {
   Navigator.of(context).pushReplacementNamed(destination);
 }
 
+void navigateAndClearHistoryWithArguments(BuildContext context, String destination, {arguments}) {
+  Navigator.pushNamedAndRemoveUntil(context, destination, (r) => false);
+}
+
 void navigateAndClearHistory(BuildContext context, String destination) {
   Navigator.pushNamedAndRemoveUntil(context, destination, (r) => false);
 }
