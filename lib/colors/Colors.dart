@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shopping_app_ui/constant/Constants.dart';
 
 ThemeData themeData(bool isDarkTheme, BuildContext context) {
   return ThemeData(
-    primarySwatch: Colors.deepPurple,
+    primarySwatch: Colors.blue,
     primaryColor: isDarkTheme ? Colors.black : Colors.white,
     backgroundColor: isDarkTheme ? Colors.grey : Color(0xffF1F5FB),
     indicatorColor: isDarkTheme ? Color(0xff0E1D36) : Color(0xffCBDCF8),
@@ -31,20 +30,16 @@ ThemeData themeData(bool isDarkTheme, BuildContext context) {
     ),
     appBarTheme: AppBarTheme(
       elevation: 0.0,
-      backgroundColor: isDarkTheme ? Colors.purple[900] : primaryColor,
-      iconTheme: IconThemeData(color: Colors.white), toolbarTextStyle: TextTheme(
+      backgroundColor: isDarkTheme ? Colors.blue[900] : primaryColor,
+      brightness: Brightness.dark,
+      iconTheme: IconThemeData(color: Colors.white),
+      textTheme: TextTheme(
         headline6: TextStyle(
           color: Colors.white,
           fontSize: 18,
           fontWeight: FontWeight.w500,
         ),
-      ).bodyText2, titleTextStyle: TextTheme(
-        headline6: TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-        ),
-      ).headline6, systemOverlayStyle: SystemUiOverlayStyle.light,
+      ),
     ),
     textSelectionTheme: TextSelectionThemeData(
       selectionColor:

@@ -5,7 +5,7 @@ import '../OdooApiCall_DataMapping/ToCheckIn_ToCheckOut_SupportTicket.dart';
   
 //might need to import session id here, to get user id, to get to filter.
 class ToCheckInTicketsApi {
-    static Future <List<ToCheckInOutSupportTicket>> getSupportTickets(OdooClient client) async{
+    static Future <List<ToCheckInOutSupportTicket>> getAllSupportTickets(OdooClient client) async{
     var fetchTicketData = await client.callKw({ //might need to be changed to widget.client.callkw later because of passing user id session.
       'model': 'website.supportzayd.ticket',
       'method': 'search_read',

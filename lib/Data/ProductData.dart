@@ -90,6 +90,8 @@ var similarProductData = [
   Product('demo_image.png', 'Set of Eyeliners', false, 4.5, 3, 0, false),
 ];
 
+
+
 var myTicketProducts = [
   Product('demo_image.png', 'iPhone 11 Pro', false, 5.0, 499, 20, false),
   Product('demo_image.png', 'Flora Aloe vera with bucket ', false, 5.0, 2, 0,
@@ -210,3 +212,14 @@ var productDetails = [
   {'key': ramLabel, 'value': '8 GB'},
   {'key': warrantyLabel, 'value': '12 month domestic warranty '},
 ];
+
+
+var myTicketProductsOdoo = [
+  Product('demo_image.png', 'iPhone 11 Pro', false, 5.0, 499, 20, false),
+  Product('demo_image.png', 'Flora Aloe vera with bucket ', false, 5.0, 2, 0,
+      false),
+  Product('demo_image.png', 'Josephs cool spec', true, 5.0, 4, 0, false),
+];
+
+
+
