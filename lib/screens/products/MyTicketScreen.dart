@@ -12,7 +12,9 @@ import 'package:shopping_app_ui/constant/Constants.dart';
 import 'package:shopping_app_ui/model/Product.dart';
 import 'package:shopping_app_ui/model/ProductInCart.dart';
 import 'package:shopping_app_ui/screens/launch/HomeScreen.dart';
+import 'package:shopping_app_ui/screens/products/MyAttendanceScreen.dart';
 import 'package:shopping_app_ui/util/RemoveGlowEffect.dart';
+import 'package:shopping_app_ui/util/custom_pageroutebuilder.dart';
 import 'package:shopping_app_ui/util/size_config.dart';
 import 'package:shopping_app_ui/widgets/Styles.dart';
 import 'package:shopping_app_ui/util/Util.dart';
@@ -101,7 +103,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
           
                   switch (snapshot.connectionState) {
                     case ConnectionState.waiting:
-                      return loadingAnimation();
+                      return AnimatedContainers(context);
                     default:
                       if (snapshot.hasError) {
                         return Center(child: Text('Some error occurred!'));
@@ -188,14 +190,14 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
         String unique = 'empty' ;
 
         print('is the problem here before getpartnerimage?');
-        print('can we get the supportticket_id here?' +supportticket.customer_id);
+        print('can we get the supportticket_id here?' +supportticket.partner_id);
 
-        //var respartnerlist = AllTicketsApi.getPartnerImage(supportticket.customer_id); //fetch partner image data based on support ticket ID.
+        //var respartnerlist = AllTicketsApi.getPartnerImage(supportticket.partner_id); //fetch partner image data based on support ticket ID.
         
-        //getPartnerImage(supportticket.customer_id); //call the class for fetching partner image data
+        //getPartnerImage(supportticket.partner_id); //call the class for fetching partner image data
         /*
         FutureBuilder <List<ResPartner>>(
-          future: AllTicketsApi.getPartnerImage(supportticket.customer_id),
+          future: AllTicketsApi.getPartnerImage(supportticket.partner_id),
           // ignore: missing_return
           builder: (context, snapshot)   
           {
@@ -226,8 +228,8 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
         unique = unique.replaceAll(RegExp(r'[^0-9]'), '');
         var avatarUrl;
 
-        if(supportticket.customer_id != 'false' && unique != '')
-          avatarUrl= '${globalClient.baseURL}/web/image?model=res.partner&id=${supportticket.customer_id}&field=image_medium'; //&unique=$unique';
+        if(supportticket.partner_id != 'false' && unique != '')
+          avatarUrl= '${globalClient.baseURL}/web/image?model=res.partner&id=${supportticket.partner_id}&field=image_medium'; //&unique=$unique';
         else
           avatarUrl = null;
 
@@ -236,8 +238,8 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
           DateTime MYtimezone = input.add(Duration(hours:8));                    
           String create_date = DateFormat("dd/MM/yyyy hh:mm:ss a").format(MYtimezone); //use this variable, because malaysia timezone is +8 hours from UTC. database gives u UTC time
 
-        //'${globalClient.baseURL}/web/image?model=res.partner&field=image_small&id=${supportticket.customer_id}&unique=$unique';
-        //${globalClient.baseURL/web/image?model=res.partner&id=${supportticket.customer_id}&field=image_medium&unique=${unique}}
+        //'${globalClient.baseURL}/web/image?model=res.partner&field=image_small&id=${supportticket.partner_id}&unique=$unique';
+        //${globalClient.baseURL/web/image?model=res.partner&id=${supportticket.partner_id}&field=image_medium&unique=${unique}}
 
         return Padding(
         padding: EdgeInsets.symmetric(
@@ -298,9 +300,13 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                     '#${supportticket.ticket_id} ${supportticket.subject}',
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 2,
-                                    style: Theme.of(context).textTheme.subtitle2,
+                                    style: Theme.of(context).textTheme.subtitle1.copyWith(
+                                          fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),
+                                    
                                   ),
+                                
                                 ),
+                                SizedBox(height: getProportionateScreenHeight(5)),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
@@ -331,7 +337,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                             ),
                                             TextSpan(
                                               text: ' '+supportticket.equipment_user,
-                                              style: homeScreensClickableLabelStyle,
+                                              style: ticketScreensClickableLabelStyle,
                                             ),
                                           ],
                                         ),
@@ -358,11 +364,11 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
 
                                 
 
-                                  supportticket.customer_name != 'false'? 
+                                  supportticket.partner_name != 'false'? 
                                     Container(
                                       width: SizeConfig.screenWidth / 1.8,
                                       child: RichText(
-                                        overflow: TextOverflow.clip,
+                                        overflow: TextOverflow.ellipsis,
                                         maxLines: 1,
                                         text: TextSpan(
                                           children: [
@@ -370,10 +376,10 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                               child: Icon(Icons.business,size: 20),
                                             ),
                                             TextSpan(
-                                              text: ' '+supportticket.customer_name,
+                                              text: ' '+supportticket.partner_name,
                                               style:Theme.of(context)
                                               .textTheme
-                                              .caption
+                                              .bodyText2
                                               .copyWith(
                                                 //decoration:
                                                 //    TextDecoration.lineThrough,
@@ -389,7 +395,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                   Container(
                                     width: SizeConfig.screenWidth / 1.8,
                                       child: RichText(
-                                        overflow: TextOverflow.clip,
+                                        overflow: TextOverflow.ellipsis,
                                         maxLines: 1,
                                         text: TextSpan(
                                           children: [
@@ -400,12 +406,65 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                               text: ' '+create_date,
                                               style:Theme.of(context)
                                               .textTheme
-                                              .caption
+                                              .bodyText2
                                               .copyWith(
                                                 //decoration:
                                                 //    TextDecoration.lineThrough,
+                                                color: Theme.of(context).textTheme.caption.color,
                                               ),
                                             ),
+                                          ],
+                                        ),
+                                      ),
+                                  ),
+
+                                  SizedBox(height : getProportionateScreenHeight(10)),
+                                  Container(
+                                    width: SizeConfig.screenWidth / 2,
+                                      child: RichText(
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 2,
+                                        text: TextSpan(
+                                          children: [ 
+                                            supportticket.category_name != '' && supportticket.subcategory_name == ''
+                                            ?                            
+                                            TextSpan(                 
+                                              text: '• '+supportticket.category_name,
+                                              style:Theme.of(context)
+                                              .textTheme
+                                              .bodyText2
+                                              .copyWith(
+                                                decoration: TextDecoration.underline,
+                                                color: orangeredColor                                  
+                                              ),
+                                            ) :
+
+                                            supportticket.category_name !='' && supportticket.subcategory_name != ''
+                                            ?                                           
+                                            TextSpan( 
+                                              children: [            
+                                                TextSpan (                                            
+                                                  text: '• '+supportticket.category_name,
+                                                  style:Theme.of(context)
+                                                  .textTheme
+                                                  .bodyText2
+                                                  .copyWith(
+                                                    decoration: TextDecoration.underline,
+                                                    color: orangeredColor                                  
+                                                  )
+                                                ),
+                                                TextSpan(                                              
+                                                  text: ' '+'• '+supportticket.subcategory_name,
+                                                  style:Theme.of(context)
+                                                  .textTheme
+                                                  .caption
+                                                  .copyWith(                                                   
+                                                  ),
+                                                )
+                                              ]
+                                            ) 
+                                            : 
+                                            null                                       
                                           ],
                                         ),
                                       ),
@@ -451,30 +510,108 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                     padding: EdgeInsets.symmetric(
                       vertical: getProportionateScreenWidth(4),
                     ),
-                    child: RichText(
-                      text: TextSpan(
-                        children: [
-                          /*
-                          TextSpan(
-                            text: product.isAddedInCart
-                                ? 'Added in cart'
-                                : addToCartLabel,
-                            style: product.isAddedInCart
-                                ? Theme.of(context).textTheme.caption
-                                : homeScreensClickableLabelStyle,
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                setState(
-                                  () {
-                                    if (!product.isAddedInCart) {
-                                      addProductToCart(product, true);
-                                    }
-                                  },
-                                );
-                              },
-                          ),
-                          */
-                        ],
+                    child: 
+                    
+                    /*supportticket.check_in != '' && supportticket.check_out != '' 
+                                  ? 'Done checked out'
+                                  : null,
+                              style: supportticket.check_in != '' && supportticket.check_out != '' 
+                                  ? Theme.of(context).textTheme.caption.copyWith(
+                                    fontFamily: poppinsFont,
+                                    color:Colors.white
+                                  )
+                    */
+                    supportticket.check_in != '' && supportticket.check_out != '' 
+                    ? 
+                    Text('Done checked out',
+                      style: Theme.of(context).textTheme.caption.copyWith(
+                        fontFamily: poppinsFont,
+                      )
+                    )                     
+                    :
+                    ElevatedButton(
+                      
+                      onPressed:(){
+                        Navigator.push(
+                          context,
+                          OpenUpwardsPageRoute(child: MyAttendanceScreen(
+                            supportticket), 
+                            direction: AxisDirection.up),                         
+                          //MaterialPageRoute(
+                          //  builder: (context) => MyAttendanceScreen(supportticket) //here we passed the data of supportticket listview card. So there will be no need of calling twice. save performance.
+                          //)
+                        ); 
+                      } ,
+                      autofocus: true,
+                      style: ButtonStyle(
+                        elevation: MaterialStateProperty.resolveWith<double>(
+                        (Set<MaterialState> states) {
+                          if (states.contains(MaterialState.pressed))
+                            return 16;
+                          return null;
+                        }),
+                        //shape: RectangularRangeSliderTrackShap
+                        backgroundColor: MaterialStateProperty.all<Color>(primaryColor),
+                        
+                        ),
+                        
+                
+                      child: RichText(
+                        text: TextSpan(
+                          children: [
+                            
+                            
+                            TextSpan(
+                              text: supportticket.check_in == '' && supportticket.check_out == '' 
+                                  ? 'CHECK IN'
+                                  : supportticket.check_in  != '' && supportticket.check_out == ''
+                                  ? 'CHECK OUT'
+                                  : null,
+                                  style: Theme.of(context).textTheme.button.copyWith(
+                                      fontFamily: poppinsFont,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      decoration: TextDecoration.none,
+                                    
+                                  ),
+                              /*
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  setState(
+                                    () {
+                                      
+                                      if (!product.isAddedInCart) {
+                                        addProductToCart(product, true);
+                                      }
+                                      
+                                    },
+                                  );
+                                },
+                              */
+                            ),
+                            /*
+                            TextSpan(
+                              text: product.isAddedInCart
+                                  ? 'Added in cart'
+                                  : addToCartLabel,
+                              style: product.isAddedInCart
+                                  ? Theme.of(context).textTheme.caption
+                                  : homeScreensClickableLabelStyle,
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  setState(
+                                    () {
+                                      if (!product.isAddedInCart) {
+                                        addProductToCart(product, true);
+                                      }
+                                    },
+                                  );
+                                },
+                            ),
+                            */
+                            
+                          ],
+                        ),
                       ),
                     ),
                   ),

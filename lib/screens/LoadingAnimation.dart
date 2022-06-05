@@ -2,12 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
+import 'package:shopping_app_ui/util/Util.dart';
 
-AnimatedContainer loadingAnimation(){
+Widget AnimatedContainers(context){
 
   return AnimatedContainer(
-    duration: const Duration (milliseconds: 800),
+    
     curve: Curves.fastLinearToSlowEaseIn,
+    duration: const Duration(microseconds: 1),  //set lowest because we dont want unnecessary delay, cannot set as null because 'duration' is a required element of animatedcontainer.
     child: Dialog(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular (20),
@@ -28,7 +30,8 @@ AnimatedContainer loadingAnimation(){
                 height: 200,
                 width: 200,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  //color: Theme.of(context).backgroundColor,
+                  color: isDarkMode(context) ? Colors.white: Colors.white,
                   shape: BoxShape.rectangle,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow:[
@@ -41,7 +44,9 @@ AnimatedContainer loadingAnimation(){
                 ),
                 child: Center(
                   child: SpinKitCubeGrid(
-                    color: primaryColor,
+                    //color: Theme.of(context).hoverColor,
+                    //color: Colors.blue,
+                    color: isDarkMode(context) ? Colors.black : Colors.blue,
                     size: 80,
                   )
     

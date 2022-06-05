@@ -3,6 +3,7 @@ import 'package:shopping_app_ui/constant/Constants.dart';
 
 ThemeData themeData(bool isDarkTheme, BuildContext context) {
   return ThemeData(
+    
     primarySwatch: Colors.blue,
     primaryColor: isDarkTheme ? Colors.black : Colors.white,
     backgroundColor: isDarkTheme ? Colors.grey : Color(0xffF1F5FB),
@@ -57,7 +58,7 @@ TextStyle themeTextStyle(bool isDarkTheme){
     fontFamily: poppinsFont,
   );
 }
-
+const orangeredColor = const Color(0xffff4500);
 const primaryColor = Color(0xFF1B81F8);
 Color primaryColorDark = Color(0xFF0C4587);
 const mattColor = Color(0xFF171717);

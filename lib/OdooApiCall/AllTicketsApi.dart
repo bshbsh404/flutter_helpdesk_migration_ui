@@ -46,44 +46,36 @@ class AllTicketsApi {
     //listTicket =  fetchTicketData.map((json) => ClosedClosedSupportTicket.fromJson(json)).toList(); //convert our json data from odoo to list.
     return listTicket.map((json) => SupportTicket.fromJson(json)).toList().length;
   }
-
       static Future<List<SupportTicketResPartner>> getAllSupportTicketsResPartner () async {
-
         //List combineddata = [];  //create an empty list to add them all later
-
         var dataSupportTicket = await getAllSupportTickets(); //get value of list1
         var mappingResPartner;
 
-        //now we will find respartner using the value of customer_id from dataSupportTicket
+        //now we will find respartner using the value of partner_id from dataSupportTicket
         for(var i=0; i<dataSupportTicket.length; i++){
-          //var dataResPartner = await getPartnerImage(dataSupportTicket[i].customer_id); //get value of list2 based on the parameters needed in list1 which is 'customer_id'
-          //var temp = dataResPartner;
-          //print ('datarespartner maybe? : '+temp.toString());
-          var fetchResPartner = await globalClient.callKw({
+          var fetchResPartner;
+
+      
+          fetchResPartner= await globalClient.callKw({
+
             'model': 'res.partner',
             'method': 'search_read',
             'args': [],
             'kwargs': {
               'context': {'bin_size': true},
-              'domain': [['id','=',int.parse(dataSupportTicket[i].customer_id != 'false' ? dataSupportTicket[i].customer_id : '0')],['id','!=','0']], //if the value is false (because we set that if it will return 'false' in SupportTicket call), then we will return the id as 0. we are taking 0 because in res.partner 0 belongs to no one. Administrator (first id) starts at 1. :) :) :)
-              'fields': ['id', 'name', 'email', '__last_update', 'image_small'],
+              'domain': [['id','=',int.parse(dataSupportTicket[i].partner_id != 'false' ? dataSupportTicket[i].partner_id : '0')],['id','!=','0']], //if the value is false (because we set that if it will return 'false' in SupportTicket call), then we will return the id as 0. we are taking 0 because in res.partner 0 belongs to no one. Administrator (first id) starts at 1. :) :) :)
+              'fields': ['__last_update','partner_longitude', 'partner_latitude'],
 
             },
-          });
-
-          
+          });      
           List listResPartner = [];
           listResPartner = fetchResPartner; 
           mappingResPartner = listResPartner.map((json) => SupportTicketResPartner.fromJson(json)).toList();
-          //dataSupportTicket.addAll(mappingResPartner);
-
+          //dataSupportTicket.addAll(mappingResPartner);      
+          
         }
         dataSupportTicket.addAll(mappingResPartner);
-        
-
-        return dataSupportTicket; //now after we added all the datasupportticket mapping hehehehe! we return it!
-        
-        //return listpartnerimage.map((json) => SupportTicketResPartner.fromJson(json)).toList();
+        return dataSupportTicket; //now after we added all the datasupportticket mapping hehehehe! we return it      
+        //return listpartnerimage.map((json) => SupportTicketResPartner.fromJson(json)).toList(); 
       }
-
 }

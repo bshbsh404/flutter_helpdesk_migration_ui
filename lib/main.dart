@@ -6,6 +6,7 @@ import 'package:shopping_app_ui/screens/launch/HomeScreen.dart';
 import 'package:shopping_app_ui/screens/authentication/LoginScreen.dart';
 import 'package:shopping_app_ui/screens/order_process/MyCartScreen.dart';
 import 'package:shopping_app_ui/screens/products/AllCategoriesScreen.dart';
+import 'package:shopping_app_ui/screens/products/MyAttendanceScreen.dart';
 import 'package:shopping_app_ui/screens/products/MyTicketScreen.dart';
 import 'package:shopping_app_ui/screens/order_process/MyOrdersScreen.dart';
 import 'package:shopping_app_ui/screens/authentication/SignUpScreen.dart';
@@ -59,6 +60,7 @@ class _MyAppState extends State<MyApp> {
               '/SignUpScreen': (BuildContext context) => SignUpScreen(),
               HomeScreen.routeName: (BuildContext context) => HomeScreen(),
               '/MyTicketScreen': (BuildContext context) => MyTicketScreen(),
+              //'/MyAttendanceScreen': (BuildContext context) => MyAttendanceScreen(),
               '/AddedToCartScreen': (BuildContext context) =>
                   AddedToCartScreen(),
               '/MyCartScreen': (BuildContext context) => MyCartScreen(),
@@ -69,8 +71,6 @@ class _MyAppState extends State<MyApp> {
               '/DeliveryAddressScreen': (BuildContext context) =>
                   DeliveryAddressScreen(),
               '/MyOrdersScreen': (BuildContext context) => MyOrdersScreen(),
-
-
             },
           );
         },

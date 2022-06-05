@@ -480,7 +480,7 @@ class _HomeScreenState extends State<HomeScreen>
                               overflow: TextOverflow.ellipsis,
                               maxLines: 2,
                             )
-                          ],
+                          ], 
                         ),
                       ),
                       borderRadius: BorderRadius.all(

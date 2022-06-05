@@ -3,6 +3,7 @@ const String productImagesPath = 'assets/product_images';
 const String darkIconPath = 'assets/icon_dark';
 const String lightIconPath = 'assets/icon_light';
 
+
 const String nextLabel = 'Next';
 const String skipLabel = 'Skip';
 const String continueLabel = 'Continue';

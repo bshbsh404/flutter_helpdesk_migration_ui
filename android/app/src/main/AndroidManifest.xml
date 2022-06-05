@@ -9,7 +9,7 @@
            <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
     <application
         android:name="${applicationName}"
-        android:label="Shopping App"
+        android:label="iSupport Sigma"
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
@@ -49,5 +49,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data android:name="com.google.android.geo.API_KEY"
+        android:value="AIzaSyDgJb-Ss4BFWDxYa0zANNYSIYwFhRkh1vU"/> <!-- this is googlemaps API KEY for android @apeace.luffy acc, have to change this to company profile oneday.-->
     </application>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- for use of geofencing(future), and getting precise location-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 </manifest>

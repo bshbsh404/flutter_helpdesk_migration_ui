@@ -1053,3 +1053,12 @@ TextStyle homeScreensClickableLabelStyle = TextStyle(
   fontWeight: FontWeight.w600,
   decoration: TextDecoration.none,
 );
+
+TextStyle ticketScreensClickableLabelStyle = TextStyle(
+  fontFamily: poppinsFont,
+  color: primaryColor,
+  fontSize: SizeConfig.screenHeight * 0.018,
+  fontWeight: FontWeight.w500,
+  decoration: TextDecoration.none,
+);
+
