@@ -36,8 +36,8 @@ class SupportTicket{
     created_date: json['create_date'] == false ? json['create_date'] = '' : json['create_date'].toString(),
     subject: json['subject'] == false ? json['subject'] = '' : json['subject'].toString(),
     rating: json['rating'] == null ? json['rating'] = '0' : json['rating'].toString(),
-    partner_id: json['partner_id'] == false  ? json['partner_id'] = 'false' : json['partner_id'][0].toString(),
-    partner_name: json['partner_id'] == false ? json['partner_id'] = 'false' : json['partner_id'][1].toString(),    
+    partner_id: json['partner_id'] == false  ? json['partner_id'] = null : json['partner_id'][0].toString(),
+    partner_name: json['partner_id'] == false ? json['partner_id'] = null : json['partner_id'][1].toString(),    
     equipment_location: json['equipment_location'] == null ? json['equipment_location'] = 'Not Defined' : json['equipment_location'].toString(),
 
   );

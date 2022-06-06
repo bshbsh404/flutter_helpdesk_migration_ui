@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:after_layout/after_layout.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicket.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicketandResPartner.dart';
+import 'package:shopping_app_ui/util/size_config.dart';
 import '../colors/Colors.dart';
 import '../util/Util.dart';
 import 'Styles.dart';
@@ -20,7 +21,10 @@ const double CAMERA_BEARING=0;
 
 class MapsWidget extends StatefulWidget {
   final SupportTicketResPartner supportticket;
-  MapsWidget(this.supportticket, {Key key}): super(key: key);
+  final partner_lat;
+  // ignore: non_constant_identifier_names
+  final partner_long;
+  MapsWidget(this.supportticket, this.partner_lat, this.partner_long, {Key key}): super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -36,37 +40,40 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   Set<Circle> _circles = {};
   GoogleMapController _googleMapController;
   Completer<GoogleMapController> _controller = Completer();
-  var currentLong;
-  var currentLat;
+  var currentLong; //= 2.9293851; // WE WILL SET SOMETHING 
+  var currentLat; //= 101.6292768; //should be null or empty because later, setstate will change the value when geolocator position are called
+  var currentSiteLat;
+  var currentSiteLong;
+  String _mapStyle;
 
-  get initialCameraPosition =>   
+  get _initialCameraPosition =>   
     CameraPosition(
-    target: LatLng(widget.supportticket.partner_lat , widget.supportticket.partner_long), //this is sigma location
+    target: LatLng(widget.partner_lat , widget.partner_long), //this is sigma location
     zoom: CAMERA_ZOOM,
     bearing: CAMERA_BEARING,
     tilt: CAMERA_TILT
   );
-  
-    
+   
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    rootBundle.loadString('assets/json/googlemapsapi/nightmode.txt').then((string) {
+    _mapStyle = string;});
     getGeoLocatorPermission();
     print("what is my currentlat"+currentLat.toString());
-    print('site lat long: '+ (widget.supportticket.partner_lat.toString()));
+    print('site lat long: '+ (widget.partner_lat.toString())); 
+    _callCustomMarker(); // this is compulsory to get the custom marker, otherwise null error are thrown.
     
-    //_setCustomMarker();
   }
   @override
   bool get wantKeepAlive => true;
 
-  Future<void> _currentLocation() async {
+  Future<void> _getCurrentUserLocation() async {
    final GoogleMapController controller = await _controller.future;
-   LocationData currentLocation;
-   var location = new Location();
+   Position  currentLocation;
    try {
-     currentLocation = await location.getLocation();
+     currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
      setState(() {
        currentLat = currentLocation.latitude;
        currentLong = currentLocation.longitude;
@@ -82,56 +89,68 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
       ),
     ));
   }
-  void _setCustomMarker()async{
+  Future<void> _getSiteLocation() async {
+   final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(
+        bearing: 0,
+        target: LatLng(widget.partner_lat, widget.partner_long),
+        zoom: 17.0,
+      ),
+    ));
+  }
+  void _callCustomMarker()async{
     siteLocationIcon = await BitmapDescriptor.fromAssetImage(
-      ImageConfiguration(devicePixelRatio: 2.5),'assets/maps_images/purplemarker-site-location.png');
+      ImageConfiguration(devicePixelRatio: 1.5),'assets/maps_images/purplemarker-site-location.png');
   }
   //to be called inside onMapCreated
   void _setMarkersAndCircles(GoogleMapController controller){
-  setState((){
-    _markers.add(
-      Marker(
-        markerId:MarkerId('id-1'),
-        position:LatLng(widget.supportticket.partner_lat,widget.supportticket.partner_long), //or can be LatLng(widget.lat,widget.long) 
-        //this is Site Lot Lang. should be set inside odoo. If failed to get Lat Lang from odoo, then no need to set circle, and just let the user check in from wherever theyare.  
-        infoWindow:InfoWindow(
-          title:'Sigma Office',
-          snippet:'our office bro',
-        ),
-        icon: siteLocationIcon,        
-      )
-    );
-    _circles.add(
-    Circle(
-      circleId: CircleId("circle-1"),
-      center: LatLng(widget.supportticket.partner_lat, widget.supportticket.partner_long), //this is approx sigma location // Lat Lng should be called from _setmarkers.
-      radius: 500, // 1000 = 1km; radius is meters as in documentation
-      strokeWidth: 2,
-      //fillColor:Color.fromARGB(248, 233, 219, 248)),
-      fillColor: Color.fromARGB(255, 227, 198, 232).withOpacity(0.30))    
-    );
-  }); 
-  
-
-  Location location = new Location();
-  //setup a stream subscription so that we can, cancel this on void dispose(), this is the only way  
-  StreamSubscription<LocationData> locationSubscription = location.onLocationChanged.listen((LocationData currentLocation) {
-    var distance = GeolocatorPlatform.instance.distanceBetween( widget.supportticket.partner_lat, widget.supportticket.partner_long,currentLocation.latitude, currentLocation.longitude);
-    //Use current location
-    //now check if distance is >= defined radius for circle
-    var currentlocationLatstring = currentLocation.latitude;
-    var currentlocationLongstring = currentLocation.longitude;
-    print("value of current location.latitude: "+currentlocationLatstring.toString());
-    print("value of current location.longitude: "+currentlocationLongstring.toString());
-      if (distance < 1000){
-        print
-        ("return true: let this user check in ");
-      }else{
-        print("return false: do not let this user check in ");
-      } 
+    if(widget.partner_lat != null || widget.partner_long != null)
+    {
+      setState((){
+        _markers.add(
+          Marker(
+            markerId:MarkerId(widget.supportticket.partner_id),
+            position:LatLng(widget.partner_lat,widget.partner_long), //or can be LatLng(widget.lat,widget.long) 
+            //this is Site Lot Lang. should be set inside odoo. If failed to get Lat Lang from odoo, then no need to set circle, and just let the user check in from wherever theyare.  
+            infoWindow:InfoWindow(
+              title: widget.supportticket.partner_name,
+              snippet:'Our Customer',
+            ),
+            icon: siteLocationIcon,        
+          )
+        );
+        _circles.add(
+        Circle(
+          circleId: CircleId("circle-1"),
+          center: LatLng(widget.partner_lat, widget.partner_long), //this is approx sigma location // Lat Lng should be called from _setmarkers.
+          radius: 500, // 1000 = 1km; radius is meters as in documentation
+          strokeWidth: 1,
+          strokeColor: primaryColorLight,
+          //fillColor:Color.fromARGB(248, 233, 219, 248)),
+          fillColor: primaryColorLight.withOpacity(0.20))    
+        );
+      });       
     }
+
+  
+  //get current position using geolocator
+  final LocationSettings locationSettings = LocationSettings(
+  accuracy: LocationAccuracy.high,
   );
-    
+  // ignore: cancel_subscriptions
+  StreamSubscription<Position> positionStream = Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+    (Position position) {
+        var distance = GeolocatorPlatform.instance.distanceBetween( (widget.partner_lat), widget.partner_long,position.latitude, position.longitude);
+        print(position == null ? 'Unknown' : '${position.latitude.toString()}, ${position.longitude.toString()}');
+        if (distance < 1000){
+          print
+          ("return true: let this user check in ");
+        }else{
+          print("return false: do not let this user check in ");
+        } 
+    }
+  ); 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -141,18 +160,20 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   }
 
   @override
-  void afterFirstLayout (BuildContext context){
-    _setCustomMarker();
-  }
-  @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); //ifnot mistaken this is so that maps wont return to blank if we tabout, and tab in back to the apps //TODO check its functionalities
-    //locationSub
-    locationSubscription.cancel();
     super.dispose();
+    WidgetsBinding.instance.removeObserver(this); //ifnot mistaken this is so that maps wont return to blank if we tabout, and tab in back to the apps //
+    positionStream.cancel(); //dispose listening to stream position
+    print("mapswidget disposed");
   }
-}
 
+@override
+void deactivate() {
+  positionStream.cancel();
+  super.deactivate();
+  print("mapswidget deactivated");
+}
+}
   void getGeoLocatorPermission() async{
     bool serviceEnabled;
     LocationPermission permission;
@@ -190,11 +211,19 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
     //get current location on load widget,, this is different from getting current location by clicking on it as that fucntion is manual
     //this location is auto start on load widget.
     return Scaffold(
-        body: currentLat == null || currentLong == null
+        appBar: buildAppBar(
+        context,
+        'my maps',
+        onBackPress: () {
+          final CurvedNavigationBarState navState = getNavState();
+          navState.setPage(0);
+        }),
+        
+        body: widget.partner_lat == null || widget.partner_long == null
           ? Container() 
             : Container(
               width: MediaQuery.of(context).size.width,  // or use fixed size like 200
-              height: MediaQuery.of(context).size.height,            
+              height: MediaQuery.of(context).size.height*0.6, //set it to 0.8 for testing the slidinguppanel            
               child: GoogleMap(           
                 circles: _circles,
                 myLocationEnabled: true,
@@ -204,29 +233,44 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
                 markers: _markers,
                 mapType: MapType.normal,
                 zoomControlsEnabled: false,             
-                initialCameraPosition: initialCameraPosition,
-                //onMapCreated: _onMapCreated,   
+                initialCameraPosition: _initialCameraPosition,   
                 onMapCreated:(GoogleMapController controller){
+                  isDarkMode(context) ? controller.setMapStyle(_mapStyle) : controller.setMapStyle("[]");
                   _controller.complete(controller);
                   _setMarkersAndCircles(controller);
-                },   
-                    
-              ),
-              
+                },              
+              ),        
             ),
             floatingActionButton: Padding(
-              padding: const EdgeInsets.only(bottom:50.0),
-              child: FloatingActionButton(
-              onPressed: _currentLocation,
-              child: Icon(Icons.my_location_outlined,
-              color: primaryColor,),
-              backgroundColor: Colors.white
+              padding: EdgeInsets.symmetric(vertical: SizeConfig.screenHeight*0.38,horizontal: 2), //need to find good height so that googlemapsapi direction button are shown too
+              child: Column(
+                //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  FloatingActionButton(
+                  onPressed: _getCurrentUserLocation,
+                  child: Icon(Icons.gps_fixed_outlined,
+                  size: 30,
+                  color: primaryColor,),
+                  backgroundColor: Colors.white,
+                  heroTag: null // need to put the herotag otherwise error will occurs if we use 2 floating button
+                  ),
+                  SizedBox(height:20),
+                  FloatingActionButton(
+                  onPressed: _getSiteLocation,
+                  child: Icon(Icons.pin_drop,
+                  size: 30,
+                  color: primaryColor,),
+                  backgroundColor: Colors.white,
+                  heroTag: null
+                  ),
+                ],
               ),
-            ),
-      
+            )
+            
     );
   }
 }
+
 
   
 

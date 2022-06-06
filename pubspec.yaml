@@ -65,7 +65,7 @@ dev_dependencies:
 flutter_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/ic_launcher.png"
+  image_path: "assets/images/ic_launcher.jpeg"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -85,6 +85,7 @@ flutter:
     - assets/icon_dark/
     - assets/product_images/
     - assets/maps_images/
+    - assets/json/googlemapsapi/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

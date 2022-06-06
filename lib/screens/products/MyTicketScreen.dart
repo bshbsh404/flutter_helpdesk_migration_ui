@@ -45,6 +45,8 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
   
   }
 
+
+  //TODO remove this after debugging stage finished
   Future<void> checkOdooSession () async {
     try {
       await globalClient.checkSession();
@@ -57,8 +59,9 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
 
   @override
   void dispose() {
-    super.dispose();
+  
     scrollcontroller.dispose();  
+    super.dispose();
   }
 
   /*getPartnerImage(supportticketID) async {
@@ -95,7 +98,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                 
               FutureBuilder(
                 //future: AllTicketsApi.getAllSupportTickets(),
-                future: AllTicketsApi.getAllSupportTicketsResPartner(),//Future.wait( [AllTicketsApi.combinedData(), AllTicketsApi.getAllSupportTickets()]),
+                future: AllTicketsApi.getAllSupportTickets(),//Future.wait( [AllTicketsApi.combinedData(), AllTicketsApi.getAllSupportTickets()]),
                 builder: (context, snapshot) {
                   //final partners = snapshot.data[0];
                   final tickets = snapshot.data;
@@ -186,12 +189,9 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
 
         var supportticket = supporttickets[index];
         //var respartner = respartners[index];
-
         String unique = 'empty' ;
-
         print('is the problem here before getpartnerimage?');
-        print('can we get the supportticket_id here?' +supportticket.partner_id);
-
+        print('can we get the supportticket_id here?' +supportticket.partner_id.toString());
         //var respartnerlist = AllTicketsApi.getPartnerImage(supportticket.partner_id); //fetch partner image data based on support ticket ID.
         
         //getPartnerImage(supportticket.partner_id); //call the class for fetching partner image data
@@ -228,7 +228,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
         unique = unique.replaceAll(RegExp(r'[^0-9]'), '');
         var avatarUrl;
 
-        if(supportticket.partner_id != 'false' && unique != '')
+        if(supportticket.partner_id != null && unique != '')
           avatarUrl= '${globalClient.baseURL}/web/image?model=res.partner&id=${supportticket.partner_id}&field=image_medium'; //&unique=$unique';
         else
           avatarUrl = null;
@@ -237,9 +237,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
           DateTime input = inputFormat.parse (supportticket.created_date);
           DateTime MYtimezone = input.add(Duration(hours:8));                    
           String create_date = DateFormat("dd/MM/yyyy hh:mm:ss a").format(MYtimezone); //use this variable, because malaysia timezone is +8 hours from UTC. database gives u UTC time
-
-        //'${globalClient.baseURL}/web/image?model=res.partner&field=image_small&id=${supportticket.partner_id}&unique=$unique';
-        //${globalClient.baseURL/web/image?model=res.partner&id=${supportticket.partner_id}&field=image_medium&unique=${unique}}
+          String respartner_id = supportticket.partner_id != null ? supportticket.partner_id : '';
 
         return Padding(
         padding: EdgeInsets.symmetric(
@@ -376,7 +374,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                               child: Icon(Icons.business,size: 20),
                                             ),
                                             TextSpan(
-                                              text: ' '+supportticket.partner_name,
+                                              text: ' '+supportticket.partner_name.toString(),
                                               style:Theme.of(context)
                                               .textTheme
                                               .bodyText2
@@ -469,9 +467,6 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                         ),
                                       ),
                                   ),
-
-                                
-
                               ],
                             ),
                           ],
@@ -510,8 +505,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                     padding: EdgeInsets.symmetric(
                       vertical: getProportionateScreenWidth(4),
                     ),
-                    child: 
-                    
+                    child:      
                     /*supportticket.check_in != '' && supportticket.check_out != '' 
                                   ? 'Done checked out'
                                   : null,
@@ -529,13 +523,13 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                       )
                     )                     
                     :
-                    ElevatedButton(
-                      
+                    ElevatedButton(     
                       onPressed:(){
+                        
                         Navigator.push(
                           context,
                           OpenUpwardsPageRoute(child: MyAttendanceScreen(
-                            supportticket), 
+                            supportticket, respartner_id), 
                             direction: AxisDirection.up),                         
                           //MaterialPageRoute(
                           //  builder: (context) => MyAttendanceScreen(supportticket) //here we passed the data of supportticket listview card. So there will be no need of calling twice. save performance.

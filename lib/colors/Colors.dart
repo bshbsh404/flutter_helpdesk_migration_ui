@@ -60,6 +60,7 @@ TextStyle themeTextStyle(bool isDarkTheme){
 }
 const orangeredColor = const Color(0xffff4500);
 const primaryColor = Color(0xFF1B81F8);
+const primaryColorLight = Color(0xFFADD8E6);
 Color primaryColorDark = Color(0xFF0C4587);
 const mattColor = Color(0xFF171717);
 const lightGreyColor = Color(0xff333333);

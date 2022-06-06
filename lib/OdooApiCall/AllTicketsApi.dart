@@ -55,7 +55,7 @@ class AllTicketsApi {
         for(var i=0; i<dataSupportTicket.length; i++){
           var fetchResPartner;
 
-      
+    
           fetchResPartner= await globalClient.callKw({
 
             'model': 'res.partner',
@@ -63,19 +63,49 @@ class AllTicketsApi {
             'args': [],
             'kwargs': {
               'context': {'bin_size': true},
-              'domain': [['id','=',int.parse(dataSupportTicket[i].partner_id != 'false' ? dataSupportTicket[i].partner_id : '0')],['id','!=','0']], //if the value is false (because we set that if it will return 'false' in SupportTicket call), then we will return the id as 0. we are taking 0 because in res.partner 0 belongs to no one. Administrator (first id) starts at 1. :) :) :)
+              'domain': [['id','=',int.parse(dataSupportTicket[i].partner_id != null ? dataSupportTicket[i].partner_id : '0')],['id','!=','0']], //if the value is false (because we set that if it will return 'false' in SupportTicket call), then we will return the id as 0. we are taking 0 because in res.partner 0 belongs to no one. Administrator (first id) starts at 1. :) :) :)
+
               'fields': ['__last_update','partner_longitude', 'partner_latitude'],
 
             },
           });      
           List listResPartner = [];
           listResPartner = fetchResPartner; 
+          print ("our so called res partner"+ fetchResPartner.toString());
           mappingResPartner = listResPartner.map((json) => SupportTicketResPartner.fromJson(json)).toList();
           //dataSupportTicket.addAll(mappingResPartner);      
           
         }
+        
+        //dataSupportTicket.removeWhere((_, ) => value == null);
+        //mappingResPartner.removeWhere((_, value) => value == null);
+      
+
         dataSupportTicket.addAll(mappingResPartner);
         return dataSupportTicket; //now after we added all the datasupportticket mapping hehehehe! we return it      
         //return listpartnerimage.map((json) => SupportTicketResPartner.fromJson(json)).toList(); 
       }
+
+    static Future<List<ResPartner>> getResPartner (String respartner_id) async {
+    var fetchTicketData = await globalClient.callKw({ //might need to be changed to widget.client.callkw later because of passing user id session.
+      'model': 'res.partner',
+      'method': 'search_read',
+      'args': [],
+      'kwargs': {
+        'context': {}, //because by default odoo fields.char return False when its null, therefore we change the default return '' rather than false
+        'domain': [['id','=',respartner_id]],
+        'fields': [
+          '__last_update',
+          'partner_latitude',
+          'partner_longitude'
+        ],
+      },
+    });
+    List listTicket = [];
+    listTicket = fetchTicketData; //fetchticketdata(var dynamic) is assigned to List, 
+    print("lets find out the truth of respartner : "+ fetchTicketData.toString());
+    //listTicket =  fetchTicketData.map((json) => ClosedClosedSupportTicket.fromJson(json)).toList(); //convert our json data from odoo to list.
+    return listTicket.map((json) => ResPartner.fromJson(json)).toList();
+  }
 }
+

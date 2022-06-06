@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shopping_app_ui/OdooApiCall_DataMapping/ResPartner.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicketandResPartner.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
 import 'package:shopping_app_ui/constant/Constants.dart';
@@ -9,43 +10,80 @@ import 'package:shopping_app_ui/widgets/MyCustomStepper.dart'
     as MyCustomStepper;
 import 'package:shopping_app_ui/util/Util.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-
+import '../../OdooApiCall/AllTicketsApi.dart';
 import '../../util/size_config.dart';
 import '../../widgets/MapsWidget.dart';
 
-class MyAttendanceScreen extends StatefulWidget {
-  MyAttendanceScreen(this.supporticket);
-  final SupportTicketResPartner supporticket;
-  
 
+
+class MyAttendanceScreen extends StatefulWidget {
+  MyAttendanceScreen(this.supporticket, this.respartner_id);
+  final SupportTicketResPartner supporticket;
+  final respartner_id;
   @override
   _MyAttendanceScreenState createState() => _MyAttendanceScreenState();
 }
 
 class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
+
   TextStyle orderStatusInfoTextStyle = TextStyle(
     fontSize: 11,
     fontFamily: poppinsFont,
     color: Colors.black.withOpacity(0.6),
   );
+  double currentLat;
+  double currentLong;
+  final panelController = PanelController();
+  
+
+  Future<void> getResPartnerData() async {
+    var listResPartner = await AllTicketsApi.getResPartner(widget.respartner_id);
+    print(widget.respartner_id);
+
+    setState(() {
+      for(int i=0;i<listResPartner.length;i++){
+      currentLat= listResPartner[i].partner_latitude;
+      currentLong= listResPartner[i].partner_longitude;
+    }
+    });    
+    print('tiba masanya kamu faham anak muda: '+listResPartner.toString());
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    getResPartnerData();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final panelHeightClosed = SizeConfig.screenHeight*0.2;
+    final panelHeightClosed = SizeConfig.screenHeight*0.16;
+    final panelHeightOpen = SizeConfig.screenHeight*0.55;
 
     return Scaffold(
       backgroundColor: isDarkMode(context) ? darkBackgroundColor : Theme.of(context).backgroundColor,
       appBar: buildAppBar(context, 'My Attendance', onBackPress: () {
-        Navigator.pop(context);
-        
+        Navigator.pop(context,MapsWidget(widget.supporticket, currentLat, currentLong));       
       }),
       body: SlidingUpPanel (
+        color: Theme.of(context).primaryColor,
+        controller: panelController,
         minHeight: panelHeightClosed,
-        body: MapsWidget(widget.supporticket),
+        maxHeight: panelHeightOpen,
+        parallaxEnabled: true,
+        parallaxOffset: 1.0, //maybe 0.5 is better
+        body: MapsWidget(widget.supporticket,currentLat,currentLong),
         panelBuilder: (controller) => PanelWidget(
+          panelController : panelController,
           controller: controller,
-        )
-
+        ),
+        /* //notes by hafizalwi: ideally we can use onPanelSlide and create a better gui where floating button will float on top of slidinguppanel even when panel is open or close
+        //but we will not used it as It brings a lot of lagginess to the apps.
+        onPanelSlide: (position)=> setState((){
+          //print(position);
+          position;
+        }),
+        */    
       ),
 
       
@@ -57,11 +95,38 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
           child: buildBottomPart(),
         ),
       ),
+     
+      
       
     );
-  }
+    }
 
-  Widget PanelWidget({ScrollController controller}){
+  Widget buildDragHandle()  => InkWell(
+    child:Center(
+      child:Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          width:30,
+          height:9,
+          decoration:BoxDecoration(
+          color:Colors.grey[300],
+          borderRadius:BorderRadius.circular(12),
+          ),// BoxDecoration
+        ),
+      ),// Container
+    ),// Center
+  onTap:togglePanel,
+  );// GestureDetector
+
+
+
+  //currently there is a bug where isPanelOpen and isPanelClosed will always return false because panelposition does not reach 1 , but close to 0. eg : panelposition: 0.9999999
+  //due to this bug we cannot close it
+  void togglePanel() => panelController.isPanelOpen
+    ? panelController.close().then((value) => print("panelControllerstate: "+ panelController.isPanelClosed.toString()))
+    : panelController.open();
+
+  Widget PanelWidget({ScrollController controller, PanelController panelController}){
     //final ScrollController controller; 
     //we will combine all the widgets needed inside here.
     return
@@ -70,6 +135,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
           controller: controller,
           child: Column(
             children: [
+              buildDragHandle(),
               buildIntro(),
               //buildStepper(),
               buildAttendanceData(),
@@ -98,9 +164,11 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Hello, ' + globalClient.sessionId.userName.toString() + 'this is partner longitude: '+widget.supporticket.partner_long.toString()
-                +' \n this is partner latitude: '+ widget.supporticket.partner_lat.toString()
-                +' \N this is last update '+ widget.supporticket.last_update.toString(),
+                Text('Hello, ' + globalClient.sessionId.userName.toString(),
+                
+                //+ 'this is partner longitude: '+widget.supporticket.partner_long.toString()
+                //+' \n this is partner latitude: '+ currentLat.toString()
+                //+' \N this is last update '+ currentLong.toString(),
                   style: Theme.of(context).textTheme.subtitle1.copyWith(
                       fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),
                 ),
@@ -523,5 +591,14 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
         ),
       ),
     );
+    
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+    print("Attendancescreen disposed");
+    
+
   }
 }
