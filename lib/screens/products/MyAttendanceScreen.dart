@@ -9,12 +9,11 @@ import 'package:shopping_app_ui/widgets/Styles.dart';
 import 'package:shopping_app_ui/widgets/MyCustomStepper.dart'
     as MyCustomStepper;
 import 'package:shopping_app_ui/util/Util.dart';
+import 'package:slide_to_act/slide_to_act.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../OdooApiCall/AllTicketsApi.dart';
 import '../../util/size_config.dart';
 import '../../widgets/MapsWidget.dart';
-
-
 
 class MyAttendanceScreen extends StatefulWidget {
   MyAttendanceScreen(this.supporticket, this.respartner_id);
@@ -66,6 +65,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
         Navigator.pop(context,MapsWidget(widget.supporticket, currentLat, currentLong));       
       }),
       body: SlidingUpPanel (
+        defaultPanelState: PanelState.CLOSED,
         color: Theme.of(context).primaryColor,
         controller: panelController,
         minHeight: panelHeightClosed,
@@ -92,22 +92,20 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
         child: Container(
           height: 56.0,
           alignment: Alignment.center,
-          child: buildBottomPart(),
+          child: forfun(),
         ),
       ),
-     
-      
-      
     );
     }
 
   Widget buildDragHandle()  => InkWell(
     child:Center(
       child:Padding(
+        //padding: const EdgeInsets.fromLTRB(8,0,8,8), 
         padding: const EdgeInsets.all(8.0),
         child: Container(
           width:30,
-          height:9,
+          height:8,
           decoration:BoxDecoration(
           color:Colors.grey[300],
           borderRadius:BorderRadius.circular(12),
@@ -117,9 +115,6 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
     ),// Center
   onTap:togglePanel,
   );// GestureDetector
-
-
-
   //currently there is a bug where isPanelOpen and isPanelClosed will always return false because panelposition does not reach 1 , but close to 0. eg : panelposition: 0.9999999
   //due to this bug we cannot close it
   void togglePanel() => panelController.isPanelOpen
@@ -131,18 +126,26 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
     //we will combine all the widgets needed inside here.
     return
       SafeArea(
-        child: SingleChildScrollView(
-          controller: controller,
-          child: Column(
-            children: [
-              buildDragHandle(),
-              buildIntro(),
-              //buildStepper(),
-              buildAttendanceData(),
-              buildHomeAddress(),
-              buildDeliveryExpectCard() //
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [ 
+            buildDragHandle(),
+            Flexible(
+              child: SingleChildScrollView(
+                physics: BouncingScrollPhysics(),
+                controller: controller,
+                child: Column(
+                  children: [
+                    buildIntro(),
+                    //buildStepper(),
+                    buildAttendanceData(),
+                    buildHomeAddress(),
+                    //buildDeliveryExpectCard() //
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       );
   }
@@ -175,8 +178,55 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                 SizedBox(
                   height: 5,
                 ),
-                Text('Order ID: Please Check in here!',
+                Text('Please Check in here!',
                     style: homeScreensClickableLabelStyle),
+                  SizedBox(
+                  height: 10,
+                ),
+                Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: (0),
+                  vertical: (0),
+                ),
+                child: Row(
+                  children: [
+                    StreamBuilder<Object>(
+                      stream: Stream.periodic (const Duration (seconds: 1), (count) => Duration(seconds:count)),
+                      builder: (context, snapshot) {
+                        return Container(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            DateFormat ('hh:mm:ss aa').format(DateTime.now()),
+                            style: ticketScreensClickableLabelStyle.copyWith(color: isDarkMode(context)?Color.fromARGB(255, 232, 120, 251): Colors.purpleAccent )
+                          ), 
+                        );
+                      }
+                    ),
+                    Spacer(),
+                      //TODO if checked in and checked out, put icons.check, otherwise put icons.warning/icons..waiting
+                      InkWell(
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: BorderRadius.all(
+                            Radius.elliptical(10, 10),
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                        ),
+                      ),
+                      onTap: () {}(),
+                    ),
+                  ],
+                ),
+              ),
               ],
             ),
           ),
@@ -221,7 +271,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
     );
   }
 
-  Widget buildHomeAddress() {
+  Widget buildAttendanceData() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Card(
@@ -248,57 +298,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                 '12/12/2022', 
                 'Check out', 
                 '13/12/2022'),
-              SizedBox(height: 10),
-
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: getProportionateScreenWidth(16),
-                  vertical: getProportionateScreenWidth(4),
-                ),
-                child: Row(
-                  children: [
-                    StreamBuilder<Object>(
-                      stream: Stream.periodic (const Duration (seconds: 1), (count) => Duration(seconds:count)),
-                      builder: (context, snapshot) {
-                        return Container(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            DateFormat ('hh:mm:ss aa').format(DateTime.now()),
-                            style: ticketScreensClickableLabelStyle.copyWith(color: isDarkMode(context)?Color.fromARGB(255, 232, 120, 251): Colors.purpleAccent )
-                          ), 
-                        );
-                      }
-                    ),
-                    Spacer(),
-                      //TODO if checked in and checked out, put icons.check, otherwise put icons.warning/icons..waiting
-                      InkWell(
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: primaryColor,
-                          borderRadius: BorderRadius.all(
-                            Radius.elliptical(10, 10),
-                          ),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 14,
-                          ),
-                        ),
-                      ),
-                      onTap: () {}(),
-                    ),
-                  ],
-                ),
-              ),
-
-              
-
-
-              
+              SizedBox(height: 10),             
             ],
             
           ),
@@ -376,7 +376,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
     );
   }
   */
-  Widget buildAttendanceData() {
+  Widget buildHomeAddress() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Card(
@@ -417,52 +417,6 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                   'Canada',
                   style: Theme.of(context).textTheme.bodyText2,
                 ),
-                SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-
-                    /*Text('Clock Timer',
-                        style: ticketScreensClickableLabelStyle.copyWith(color: Colors.purpleAccent)),
-                    */
-                      StreamBuilder<Object>(
-                      stream: Stream.periodic (const Duration (seconds: 1), (count) => Duration(seconds:count)),
-                      builder: (context, snapshot) {
-                        return Container(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            DateFormat ('hh:mm:ss aa').format(DateTime.now()),
-                            style: ticketScreensClickableLabelStyle.copyWith(color: Colors.purpleAccent)
-                          ), 
-                        );
-                      }
-                    ),
-
-
-                    InkWell(
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: primaryColor,
-                          borderRadius: BorderRadius.all(
-                            Radius.elliptical(10, 10),
-                          ),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 14,
-                          ),
-                        ),
-                      ),
-                      onTap: () {}(),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
@@ -470,6 +424,33 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
       ),
     );
   }
+
+  Widget forfun() {
+  return Container(
+     
+    child: Padding(
+      padding: EdgeInsets.symmetric(vertical: SizeConfig.screenHeight * 0.018),
+      child: Builder(
+        builder: (context){
+          final GlobalKey <SlideActionState> key = GlobalKey();
+          return SlideAction(
+            text: 'slide to check in',
+            textStyle: TextStyle(
+              color: isDarkMode(context) ? Colors.white.withOpacity(0.8) : Colors.white,
+            ), // TextStyle
+            outerColor: isDarkMode(context) ? Colors.grey : Colors.white,
+            innerColor: isDarkMode(context) ? primaryColorDark : primaryColor,
+            key: key,
+            onSubmit: () async {
+              //we will return lottie here hehehe?!
+            }
+          );
+        }
+      ),
+    )
+  );
+  }            
+
   Widget buildBottomPart() {
     return Container(
       child: buildButton(

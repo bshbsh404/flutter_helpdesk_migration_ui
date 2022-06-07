@@ -22,7 +22,6 @@ const double CAMERA_BEARING=0;
 class MapsWidget extends StatefulWidget {
   final SupportTicketResPartner supportticket;
   final partner_lat;
-  // ignore: non_constant_identifier_names
   final partner_long;
   MapsWidget(this.supportticket, this.partner_lat, this.partner_long, {Key key}): super(key: key);
 
@@ -31,6 +30,7 @@ class MapsWidget extends StatefulWidget {
     return _MapsWidgetState();
   }
 }
+
 
 class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMixin, 
       WidgetsBindingObserver,AfterLayoutMixin
@@ -46,6 +46,10 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   var currentSiteLong;
   String _mapStyle;
 
+
+  
+  
+
   get _initialCameraPosition =>   
     CameraPosition(
     target: LatLng(widget.partner_lat , widget.partner_long), //this is sigma location
@@ -58,7 +62,8 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   void initState() {
     // TODO: implement initState
     super.initState();
-    rootBundle.loadString('assets/json/googlemapsapi/nightmode.txt').then((string) {
+    streamLocation();
+    rootBundle.loadString('assets/json/googlemapsapi/aubergine.txt').then((string) {
     _mapStyle = string;});
     getGeoLocatorPermission();
     print("what is my currentlat"+currentLat.toString());
@@ -68,6 +73,31 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   }
   @override
   bool get wantKeepAlive => true;
+
+  
+  
+ StreamSubscription<Position> positionStream;
+  // ignore: cancel_subscriptions
+
+  void streamLocation () {
+  //stream current position using geolocator
+    final LocationSettings locationSettings = LocationSettings(
+    accuracy: LocationAccuracy.high,
+    );
+    // ignore: cancel_subscriptions
+    positionStream = Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+      (Position position) {
+          var distance = GeolocatorPlatform.instance.distanceBetween( (widget.partner_lat), widget.partner_long,position.latitude, position.longitude);
+          print(position == null ? 'Unknown' : '${position.latitude.toString()}, ${position.longitude.toString()}');
+          if (distance < 1000){
+            print
+            ("return true: let this user check in ");
+          }else{
+            print("return false: do not let this user check in ");
+          } 
+      }
+    );
+  }
 
   Future<void> _getCurrentUserLocation() async {
    final GoogleMapController controller = await _controller.future;
@@ -101,7 +131,7 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   }
   void _callCustomMarker()async{
     siteLocationIcon = await BitmapDescriptor.fromAssetImage(
-      ImageConfiguration(devicePixelRatio: 1.5),'assets/maps_images/purplemarker-site-location.png');
+      ImageConfiguration(devicePixelRatio: 0.5),'assets/maps_images/purplemarker-site-location.png');
   }
   //to be called inside onMapCreated
   void _setMarkersAndCircles(GoogleMapController controller){
@@ -122,35 +152,20 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
         );
         _circles.add(
         Circle(
-          circleId: CircleId("circle-1"),
+          circleId: CircleId(widget.supportticket.partner_id),
           center: LatLng(widget.partner_lat, widget.partner_long), //this is approx sigma location // Lat Lng should be called from _setmarkers.
           radius: 500, // 1000 = 1km; radius is meters as in documentation
           strokeWidth: 1,
-          strokeColor: primaryColorLight,
-          //fillColor:Color.fromARGB(248, 233, 219, 248)),
-          fillColor: primaryColorLight.withOpacity(0.20))    
+          strokeColor: primaryColor,
+          fillColor: primaryColorLight.withOpacity(0.10)
+          )    
         );
       });       
     }
+}
+
 
   
-  //get current position using geolocator
-  final LocationSettings locationSettings = LocationSettings(
-  accuracy: LocationAccuracy.high,
-  );
-  // ignore: cancel_subscriptions
-  StreamSubscription<Position> positionStream = Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-    (Position position) {
-        var distance = GeolocatorPlatform.instance.distanceBetween( (widget.partner_lat), widget.partner_long,position.latitude, position.longitude);
-        print(position == null ? 'Unknown' : '${position.latitude.toString()}, ${position.longitude.toString()}');
-        if (distance < 1000){
-          print
-          ("return true: let this user check in ");
-        }else{
-          print("return false: do not let this user check in ");
-        } 
-    }
-  ); 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -158,6 +173,7 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
       _googleMapController.setMapStyle("[]");
     }
   }
+  
 
   @override
   void dispose() {
@@ -167,13 +183,6 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
     print("mapswidget disposed");
   }
 
-@override
-void deactivate() {
-  positionStream.cancel();
-  super.deactivate();
-  print("mapswidget deactivated");
-}
-}
   void getGeoLocatorPermission() async{
     bool serviceEnabled;
     LocationPermission permission;
@@ -211,14 +220,7 @@ void deactivate() {
     //get current location on load widget,, this is different from getting current location by clicking on it as that fucntion is manual
     //this location is auto start on load widget.
     return Scaffold(
-        appBar: buildAppBar(
-        context,
-        'my maps',
-        onBackPress: () {
-          final CurvedNavigationBarState navState = getNavState();
-          navState.setPage(0);
-        }),
-        
+
         body: widget.partner_lat == null || widget.partner_long == null
           ? Container() 
             : Container(
@@ -242,7 +244,8 @@ void deactivate() {
               ),        
             ),
             floatingActionButton: Padding(
-              padding: EdgeInsets.symmetric(vertical: SizeConfig.screenHeight*0.38,horizontal: 2), //need to find good height so that googlemapsapi direction button are shown too
+              padding: const EdgeInsets.symmetric(vertical: 320,horizontal: 2),
+              //EdgeInsets.symmetric(vertical: SizeConfig.screenHeight*0.38,horizontal: 2), //need to find good height so that googlemapsapi direction button are shown too
               child: Column(
                 //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
