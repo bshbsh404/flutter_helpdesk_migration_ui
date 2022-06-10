@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
 import 'package:shopping_app_ui/screens/order_process/AddedToCartScreen.dart';
 import 'package:shopping_app_ui/screens/order_process/DeliveryAddressScreen.dart';
 import 'package:shopping_app_ui/screens/launch/HomeScreen.dart';
@@ -10,15 +10,14 @@ import 'package:shopping_app_ui/screens/products/MyAttendanceScreen.dart';
 import 'package:shopping_app_ui/screens/products/MyTicketScreen.dart';
 import 'package:shopping_app_ui/screens/order_process/MyOrdersScreen.dart';
 import 'package:shopping_app_ui/screens/authentication/SignUpScreen.dart';
-
 import 'package:shopping_app_ui/screens/profile/UserProfileScreen.dart';
-
 import 'colors/Colors.dart';
 import 'notifier/dark_theme_provider.dart';
 import 'screens/launch/SplashScreen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(ProviderScope(child: MyApp())); //initiating flutter riverpod (wajib iniialize providerscope on the most top of app architecture,,)
 }
 
 class MyApp extends StatefulWidget {
@@ -44,11 +43,11 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
+    return provider.ChangeNotifierProvider(
       create: (_) {
         return themeChangeProvider;
       },
-      child: Consumer<DarkThemeProvider>(
+      child: provider.Consumer<DarkThemeProvider>(
         builder: (BuildContext context, value, Widget child) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,

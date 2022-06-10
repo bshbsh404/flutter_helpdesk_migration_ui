@@ -57,6 +57,9 @@ dependencies:
   google_maps_flutter: ^2.1.7
   sliding_up_panel: ^2.0.0+1
   slide_to_act: ^2.0.1
+  riverpod: ^1.0.3
+  flutter_riverpod: ^1.0.4
+  geocoding: ^2.0.4
 
 dev_dependencies:
   flutter_test:

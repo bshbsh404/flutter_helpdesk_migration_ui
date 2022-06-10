@@ -14,10 +14,34 @@ import 'package:shopping_app_ui/model/ProductInCart.dart';
 import 'package:shopping_app_ui/screens/launch/HomeScreen.dart';
 import 'package:shopping_app_ui/screens/products/MyAttendanceScreen.dart';
 import 'package:shopping_app_ui/util/RemoveGlowEffect.dart';
-import 'package:shopping_app_ui/util/custom_pageroutebuilder.dart';
 import 'package:shopping_app_ui/util/size_config.dart';
 import 'package:shopping_app_ui/widgets/Styles.dart';
 import 'package:shopping_app_ui/util/Util.dart';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 import '../../OdooApiCall/AllTicketsApi.dart';
@@ -94,16 +118,14 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
               children: [
                 SizedBox(
                   height: getProportionateScreenWidth(10.0),
-                ),
-                
+                ),               
               FutureBuilder(
                 //future: AllTicketsApi.getAllSupportTickets(),
                 future: AllTicketsApi.getAllSupportTickets(),//Future.wait( [AllTicketsApi.combinedData(), AllTicketsApi.getAllSupportTickets()]),
                 builder: (context, snapshot) {
                   //final partners = snapshot.data[0];
                   final tickets = snapshot.data;
-                  
-          
+                     
                   switch (snapshot.connectionState) {
                     case ConnectionState.waiting:
                       return AnimatedContainers(context);
@@ -232,13 +254,11 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
           avatarUrl= '${globalClient.baseURL}/web/image?model=res.partner&id=${supportticket.partner_id}&field=image_medium'; //&unique=$unique';
         else
           avatarUrl = null;
-
           DateFormat inputFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
           DateTime input = inputFormat.parse (supportticket.created_date);
           DateTime MYtimezone = input.add(Duration(hours:8));                    
           String create_date = DateFormat("dd/MM/yyyy hh:mm:ss a").format(MYtimezone); //use this variable, because malaysia timezone is +8 hours from UTC. database gives u UTC time
           String respartner_id = supportticket.partner_id != null ? supportticket.partner_id : '';
-
         return Padding(
         padding: EdgeInsets.symmetric(
           horizontal: getProportionateScreenWidth(16),
@@ -295,7 +315,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                 Container(
                                   width: SizeConfig.screenWidth / 1.8,
                                   child: Text(
-                                    '#${supportticket.ticket_id} ${supportticket.subject}',
+                                    '#${supportticket.ticket_number} ${supportticket.subject}',
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 2,
                                     style: Theme.of(context).textTheme.subtitle1.copyWith(
@@ -530,11 +550,11 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                           context,
                           OpenUpwardsPageRoute(child: MyAttendanceScreen(
                             supportticket, respartner_id), 
-                            direction: AxisDirection.up),                         
-                          //MaterialPageRoute(
-                          //  builder: (context) => MyAttendanceScreen(supportticket) //here we passed the data of supportticket listview card. So there will be no need of calling twice. save performance.
-                          //)
-                        ); 
+                            direction: AxisDirection.up)).then((value){
+                              setState((){
+                                
+                              });
+                            });                     
                       } ,
                       autofocus: true,
                       style: ButtonStyle(
@@ -548,13 +568,10 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                         backgroundColor: MaterialStateProperty.all<Color>(primaryColor),
                         
                         ),
-                        
-                
+           
                       child: RichText(
                         text: TextSpan(
-                          children: [
-                            
-                            
+                          children: [                    
                             TextSpan(
                               text: supportticket.check_in == '' && supportticket.check_out == '' 
                                   ? 'CHECK IN'
@@ -565,8 +582,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                       fontFamily: poppinsFont,
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.none,
-                                    
+                                      decoration: TextDecoration.none,         
                                   ),
                               /*
                               recognizer: TapGestureRecognizer()

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator_platform_interface/src/models/position.dart';
 import 'package:intl/intl.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/ResPartner.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicketandResPartner.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
 import 'package:shopping_app_ui/constant/Constants.dart';
+import 'package:shopping_app_ui/riverpod_class/attendance_api.dart';
+import 'package:shopping_app_ui/riverpod_class/currentAddress_api.dart';
+import 'package:shopping_app_ui/riverpod_class/currentLocation_api.dart';
 import 'package:shopping_app_ui/screens/authentication/LoginScreen.dart';
 import 'package:shopping_app_ui/widgets/Styles.dart';
 import 'package:shopping_app_ui/widgets/MyCustomStepper.dart'
@@ -14,6 +19,8 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../OdooApiCall/AllTicketsApi.dart';
 import '../../util/size_config.dart';
 import '../../widgets/MapsWidget.dart';
+
+
 
 class MyAttendanceScreen extends StatefulWidget {
   MyAttendanceScreen(this.supporticket, this.respartner_id);
@@ -30,10 +37,22 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
     fontFamily: poppinsFont,
     color: Colors.black.withOpacity(0.6),
   );
-  double currentLat;
-  double currentLong;
+  double partnerLat;
+  double partnerLong;
+  String checkin = ''; // jst for temporary variable and also for ternary operation on slideaction
+  String checkout = '';
+  //either way we will have to add 8 hours to convert to Malaysia Time (KL)
+  //all fetchedcheck fields are used for attendanceprovider to give checkin and checkout time
+  //fetchedcheck fields are declared at the top because it is needed to be used as conditionals in slide to action 
+  DateTime fetchedCheckout;
+  DateTime fetchedCheckout_plus8;
+  DateTime fetchedCheckin;
+  DateTime fetchedCheckin_plus8;
+
   final panelController = PanelController();
-  
+  double currentlatitude; //we try to sync provider data with the parameters in slidetocheckin consumer
+  double currentlongitude; //we try to sync provider data with the parameters in slidetocheckin consumer
+  String fullAddress; //for data in slidetocheckin
 
   Future<void> getResPartnerData() async {
     var listResPartner = await AllTicketsApi.getResPartner(widget.respartner_id);
@@ -41,8 +60,8 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
 
     setState(() {
       for(int i=0;i<listResPartner.length;i++){
-      currentLat= listResPartner[i].partner_latitude;
-      currentLong= listResPartner[i].partner_longitude;
+      partnerLat= listResPartner[i].partner_latitude;
+      partnerLong= listResPartner[i].partner_longitude;
     }
     });    
     print('tiba masanya kamu faham anak muda: '+listResPartner.toString());
@@ -56,13 +75,17 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    //firstly, we have to put the value of fetched data (if it exist) into attendance provider first. ,
+    //this should be done at top of build method
+   
+
     final panelHeightClosed = SizeConfig.screenHeight*0.16;
     final panelHeightOpen = SizeConfig.screenHeight*0.55;
 
     return Scaffold(
       backgroundColor: isDarkMode(context) ? darkBackgroundColor : Theme.of(context).backgroundColor,
       appBar: buildAppBar(context, 'My Attendance', onBackPress: () {
-        Navigator.pop(context,MapsWidget(widget.supporticket, currentLat, currentLong));       
+        Navigator.pop(context);       
       }),
       body: SlidingUpPanel (
         defaultPanelState: PanelState.CLOSED,
@@ -72,10 +95,11 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
         maxHeight: panelHeightOpen,
         parallaxEnabled: true,
         parallaxOffset: 1.0, //maybe 0.5 is better
-        body: MapsWidget(widget.supporticket,currentLat,currentLong),
+        body: MapsWidget(widget.supporticket,partnerLat,partnerLong),
         panelBuilder: (controller) => PanelWidget(
           panelController : panelController,
           controller: controller,
+        
         ),
         /* //notes by hafizalwi: ideally we can use onPanelSlide and create a better gui where floating button will float on top of slidinguppanel even when panel is open or close
         //but we will not used it as It brings a lot of lagginess to the apps.
@@ -85,6 +109,8 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
         }),
         */    
       ),
+
+
 
       
       bottomNavigationBar: Padding(
@@ -116,10 +142,10 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
   onTap:togglePanel,
   );// GestureDetector
   //currently there is a bug where isPanelOpen and isPanelClosed will always return false because panelposition does not reach 1 , but close to 0. eg : panelposition: 0.9999999
-  //due to this bug we cannot close it
-  void togglePanel() => panelController.isPanelOpen
-    ? panelController.close().then((value) => print("panelControllerstate: "+ panelController.isPanelClosed.toString()))
-    : panelController.open();
+  //due to this bug we cannot close it, @update 8jun) we can fix this using by setting panel position property to 1 maybe
+  void togglePanel() => panelController.panelPosition==1.0 //panelController.isPanelOpen
+    ? panelController.panelPosition == 0.0
+    : panelController.panelPosition == 1.0;
 
   Widget PanelWidget({ScrollController controller, PanelController panelController}){
     //final ScrollController controller; 
@@ -170,16 +196,15 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                 Text('Hello, ' + globalClient.sessionId.userName.toString(),
                 
                 //+ 'this is partner longitude: '+widget.supporticket.partner_long.toString()
-                //+' \n this is partner latitude: '+ currentLat.toString()
-                //+' \N this is last update '+ currentLong.toString(),
+                //+' \n this is partner latitude: '+ partnerLat.toString()
+                //+' \N this is last update '+ partnerLong.toString(),
                   style: Theme.of(context).textTheme.subtitle1.copyWith(
                       fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),
                 ),
                 SizedBox(
                   height: 5,
                 ),
-                Text('Please Check in here!',
-                    style: homeScreensClickableLabelStyle),
+                //Text('Please Check in here!', style: homeScreensClickableLabelStyle),
                   SizedBox(
                   height: 10,
                 ),
@@ -233,9 +258,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
         ),
       ),
     );    
-
   }
-
 
   Widget buildDeliveryExpectCard() {
     return Padding(
@@ -286,21 +309,67 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
           ),
           child: Column(
             children: [
-              buildListRow(
-                Icon(Icons.location_pin, size:30),//size: SizeConfig.screenHeight*0.030),
-                'Location',
-                'Kota Kinabalu'
-              ),
+                  Consumer(
+                  builder: (BuildContext context, WidgetRef ref, Widget child) {
+                    final watchAddress = ref.watch(currentaddressFutureProvider);
+                    return watchAddress.when(
+                      data:(placemark){
+                        String addressLine1 = "${placemark[0].street}";
+                        String addressLine2 = "${placemark[0].postalCode}, ${placemark[0].locality}";
+                        String addressLine3 = "${placemark[0].administrativeArea}";
+                        String addressLine4 = "${placemark[0].country}";
+                        fullAddress = '$addressLine1,\n$addressLine2\n$addressLine3\n$addressLine4'; //this is to be inserted to data inside slidetocheck
+
+                        return buildListRowAddress(
+                          Icon(Icons.location_pin, size:30),//size: SizeConfig.screenHeight*0.030),
+                          'Location',
+                          addressLine1,
+                          addressLine2,
+                          addressLine3,
+                          addressLine4,
+                        );   
+                      },
+                      error: (e,stack) => Text('Error: unable to get location address\n Details $e'), 
+                      loading: () => const CircularProgressIndicator()
+                    );
+                  },
+                ),
+
               Divider(),
-              buildListRowWithTwoData(
-                Icon(Icons.calendar_month, size:30),//size: SizeConfig.screenHeight*0.030), 
-                'Check In',
-                '12/12/2022', 
-                'Check out', 
-                '13/12/2022'),
+              Consumer(
+                builder: (BuildContext context, WidgetRef ref, Widget child) {  
+                  final watchCheckin = ref.watch(attendanceProvider).checkInTime;
+                  final watchCheckout = ref.watch(attendanceProvider).checkOutTime;
+                  checkin = watchCheckin;             
+                  checkout = watchCheckout;
+
+                  DateFormat inputFormat =  DateFormat ('yyyy-MM-dd HH:mm:ss');
+
+                  if(widget.supporticket.check_in != ''){
+                    fetchedCheckin = DateTime.parse(widget.supporticket.check_in);
+                    fetchedCheckin_plus8 = fetchedCheckin.add(Duration(hours:8));
+                  }
+                  else if(widget.supporticket.check_out != ''){
+                    fetchedCheckout = DateTime.parse(widget.supporticket.check_out);
+                    fetchedCheckout_plus8 = fetchedCheckout.add(Duration(hours:8));
+                  }
+                print("${widget.supporticket.check_in}==asdfasdfsadfwidget.checkin && ${watchCheckin} == asdfasdfasdfwatchcheckin $checkin == checkin");
+                print("${widget.supporticket.check_out}==aasdfasdfasdfsdwidget.checkin && ${watchCheckout} == asdfasdfasdfasdfwatchcheckout $checkout == checkout ");
+
+                  
+                  return buildListRowWithTwoData(
+                    Icon(Icons.calendar_month, size:30),//size: SizeConfig.screenHeight*0.030), 
+                    'Check In',
+                    //the ternary below explains that, if there is a check_in data already inside the odoo (we fetch this data by getting it from the ticket screen), then we will just use the supplied data from the ticketscreen, otherwise we will get the data by sliding check in which will notify our changenotifierprovider CheckInTime
+                     // ignore: unrelated_type_equality_checks
+                    widget.supporticket.check_in == '' ? checkin.toString() : fetchedCheckin_plus8.toString().substring(0,19),//flutter keep giving .millisecnds for example 2022-06-06 12:12:12.000 and we dont want that, therefore we substring it at the UI level. database level will still get .000 and that is fine
+                    'Check out', 
+                    widget.supporticket.check_out == '' ? checkout.toString() : fetchedCheckout_plus8.toString().substring(0,19),//flutter keep giving .millisecnds for example 2022-06-06 12:12:12.000 and we dont want that, therefore we substring it at the UI level. database level will still get .000 and that is fine
+                  );
+                },    
+              ),
               SizedBox(height: 10),             
-            ],
-            
+            ],          
           ),
         ),
       ),
@@ -377,7 +446,10 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
   }
   */
   Widget buildHomeAddress() {
+  
     return Padding(
+
+
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Card(
         elevation: 6,
@@ -392,30 +464,30 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Check in Check out',
-                  style: Theme.of(context).textTheme.subtitle1.copyWith(
-                      fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),
+                Consumer(
+                  builder: (BuildContext context, WidgetRef ref, Widget child) {  
+                    final watchPosition = ref.watch(currentlocationFutureProvider);
+                    return watchPosition.when(
+                      data:(value){
+                      currentlatitude = value.latitude; //value to be inserted when slide to check in
+                      currentlongitude = value.longitude; //same as currentlatitude line
+                        return Text(
+                          value.toString(), style: Theme.of(context).textTheme.subtitle2.copyWith(
+                          fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
+                        ));
+                      },
+                      error: (e,stack) => Text('Error! Details$e'), 
+                      loading: () => const CircularProgressIndicator()
+                    );          
+
+                  },
+                  /*child: Text('Check in Check out',
+                    style: Theme.of(context).textTheme.subtitle1.copyWith(
+                        fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),
+                  ),*/ 
                 ),
                 SizedBox(
                   height: 5,
-                ),
-                Text(
-                  '2249 Carling Ave #416',
-                  style: Theme.of(context).textTheme.bodyText2,
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Text(
-                  'Ottawa, ON K2B 7E9',
-                  style: Theme.of(context).textTheme.bodyText2,
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Text(
-                  'Canada',
-                  style: Theme.of(context).textTheme.bodyText2,
                 ),
               ],
             ),
@@ -428,25 +500,64 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
   Widget forfun() {
   return Container(
      
-    child: Padding(
-      padding: EdgeInsets.symmetric(vertical: SizeConfig.screenHeight * 0.018),
-      child: Builder(
-        builder: (context){
-          final GlobalKey <SlideActionState> key = GlobalKey();
-          return SlideAction(
-            text: 'slide to check in',
-            textStyle: TextStyle(
-              color: isDarkMode(context) ? Colors.white.withOpacity(0.8) : Colors.white,
-            ), // TextStyle
-            outerColor: isDarkMode(context) ? Colors.grey : Colors.white,
-            innerColor: isDarkMode(context) ? primaryColorDark : primaryColor,
-            key: key,
-            onSubmit: () async {
-              //we will return lottie here hehehe?!
-            }
-          );
-        }
-      ),
+    child: Builder(
+      builder: (context){
+        final GlobalKey <SlideActionState> key = GlobalKey();
+        return Consumer(
+          builder: (BuildContext context, WidgetRef ref, Widget child) { 
+            final watchCheckInTime = ref.watch(attendanceProvider).checkInTime;
+            final watchCheckOutTime = ref.watch(attendanceProvider).checkOutTime;
+
+            //if (widget.supporticket.check_in != ''){
+            //  ref.read(attendanceProvider)
+            //}
+
+          
+            return   watchCheckOutTime != '' || widget.supporticket.check_out != '' || checkout != ''
+            ? Container() 
+            : SlideAction(
+              
+              text: 
+              
+              
+              widget.supporticket.check_in =='' && watchCheckInTime == ''   // AND if we found no data for check in (through provider) There should be data after we slide it to check in
+              ?  'Slide to Check in' 
+              :  watchCheckOutTime == '' || widget.supporticket.check_out == ''//AND if we found no data for check out after slide to check out
+              ? 'Slide to Check Out' // then display slide to check out
+              : 'No more slide, hafiz please disable this one',
+
+              textStyle: normalTextStyle,      
+              outerColor: isDarkMode(context) ? Colors.white : Colors.white,
+              innerColor: isDarkMode(context) ? Colors.black : primaryColor,
+              key: key,
+              
+              onSubmit: () {    
+                Future.delayed(
+                  Duration(milliseconds: 500),
+                  () => key.currentState.reset());  
+                // if not check in, fill check in first, if already check in, then fill checkout. 
+                //firstly, we have to put the value of fetched data (if it exist) into attendance provider first. , this should be done at top of build method
+              
+                (watchCheckInTime == '' && widget.supporticket.check_in =='') //|| widget.supporticket.check_in =='' && watchCheckInTime != ''  //&& widget.supporticket.check_in ==''
+                ? ref.read(attendanceProvider.notifier).updateCheckInWithTicketId(
+                  widget.supporticket.ticket_id, currentlatitude.toString(), currentlongitude.toString(), fullAddress)
+                  
+                :   watchCheckOutTime == '' || widget.supporticket.check_out == '' ? ref.read(attendanceProvider.notifier).updateCheckOutWithTicketId(
+                  widget.supporticket.ticket_id, currentlatitude.toString(), currentlongitude.toString(), fullAddress)
+
+                : null;
+
+                print("${widget.supporticket.check_in}==widget.checkin && ${watchCheckInTime} == watchcheckin");
+                print("${widget.supporticket.check_out}==widget.checkout && ${watchCheckOutTime} == watchcheckout $checkout == checkout ");
+                
+                //else return codes to disable this slide action because checkedin and checkedout already 
+
+                //return lottie?
+              }
+            );
+          },
+        );
+      }
     )
   );
   }            
@@ -467,7 +578,8 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
       ),
     );
   }
-  Widget buildListRow(Icon icon, String title, String subtitle) {
+
+    Widget buildListRowAddress(Icon icon, String title, String address1, String address2, String address3, String address4) {
     return InkWell(
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -484,26 +596,83 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                  Text(
-                    subtitle,
-                    style: Theme.of(context).textTheme.subtitle1.copyWith(
-                      fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
-                    ),
+                  Container(
+                    width: SizeConfig.screenWidth*0.59, //can use approx 0.6
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                        Text(
+                          address1+',',
+                          style: Theme.of(context).textTheme.subtitle2.copyWith(
+                            fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          address2+',',
+                          style: Theme.of(context).textTheme.subtitle2.copyWith(
+                            fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
+                          ),
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          address3+',',
+                          style: Theme.of(context).textTheme.subtitle2.copyWith(
+                            fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
+                          ),
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          address4,
+                          style: Theme.of(context).textTheme.subtitle2.copyWith(
+                            fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
+                          ),
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: 5),
+                      ] 
+                    )
                   ),
                 ],
               ),
             ),
             Spacer(),
-            Icon(Icons.navigate_next)
+            Consumer(          
+              builder: (BuildContext context, WidgetRef ref, Widget child) {
+              return Container( //container might be necessary because we dont want address to cause renderflow problem, address is related to iconbutton location too.
+                width: SizeConfig.screenWidth*0.09,
+                
+                child: InkWell(child: CircleAvatar(
+                  backgroundColor: primaryColor,
+                  child: IconButton(
+                    highlightColor: Colors.white,
+                    onPressed: (){
+                      ref.refresh(currentlocationFutureProvider);  // we willl just refresh the root cause which is currentlocationprovider cause , currentlocationaddress watch on currentlocationprovider
+                    },        
+                    icon: Icon(Icons.refresh_outlined,
+                    color: Colors.white,                       
+                  )),
+                ),
+              )
+              );          
+              },
+            ),
           ],
         ),
       ),
     );
   }
+
+
   Widget buildListRowWithTwoData(Icon icon, String title, String subtitle, String title2, String subtitle2 ) {
     return InkWell(
       child: Padding(
@@ -520,23 +689,26 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                 horizontal: 0,
                 vertical: 0,
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [        
-                  Text(
-                    title2,
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                  Text(
-                    subtitle,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 3,
-                    style: Theme.of(context).textTheme.subtitle1.copyWith(
-                      fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
+              child: Container(
+                width: SizeConfig.screenWidth*0.3, //TODO change the screenwidth, this is temporary only because want to test functionality of check in with provider
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [        
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.caption,
                     ),
-                  ),
-                ],              
+                    Text(
+                      subtitle,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 3,
+                      style: Theme.of(context).textTheme.subtitle1.copyWith(
+                        fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
+                      ),
+                    ),
+                  ],              
+                ),
               ),           
             ),     
             Container
@@ -548,23 +720,26 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                 color: isDarkMode(context) ? Colors.white54 : Colors.black,
               ),
             ),      
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.caption,
-                ),
-                Text(
-                  subtitle2,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 3,
-                  style: Theme.of(context).textTheme.subtitle1.copyWith(
-                    fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
+            Container(
+              width: SizeConfig.screenWidth*0.3,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title2,
+                    style: Theme.of(context).textTheme.caption,
                   ),
-                ),
-              ]
+                  Text(
+                    subtitle2,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 3,
+                    style: Theme.of(context).textTheme.subtitle1.copyWith(
+                      fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
+                    ),
+                  ),
+                ]
+              ),
             ),
             //Spacer(),
             Icon(Icons.navigate_next)
@@ -572,8 +747,9 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
         ),
       ),
     );
-    
   }
+
+  
 
   @override
   void dispose(){
@@ -582,4 +758,6 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
     
 
   }
+
+
 }

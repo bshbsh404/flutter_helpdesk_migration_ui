@@ -14,7 +14,7 @@ import 'package:shopping_app_ui/util/Util.dart';
 //using client and session will not cause security issues on global by the way, it is only used for calling data from API.
 //alternative would be to passvalue using stateful widget when passing in navigation.
 
-var URL = 'http://192.168.0.123:8069';//'http://127.0.0.1:8069';//'http://localhost:8069';//'http://10.0.0.226:8069';
+var URL = 'http://192.168.0.123:8069';//'http://127.0.0.1:8069';//'http://localhost:8069';//'http://10.0.0.226:8069'; //192.168.0.123
 var globalClient = OdooClient(URL);
 var globalSession;
 
@@ -388,32 +388,26 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        
-            //OdooClient('http://192.168.0.123:8069');
-        
-
         globalSession = await globalClient.authenticate(
             'sigmarectrix.com', email.text, password.text);
-
-        ScaffoldMessenger.of(context).clearMaterialBanners();
-        
-        navigateAndClearHistory(context, HomeScreen.routeName);
-        
-        /*Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  MyHomePage(client, session)),
-          (Route<dynamic> route) => false,
-        );
-        */
+        setState(() {
+          showLoadingIndicator = false;
+        });
+        ScaffoldMessenger.of(context).clearMaterialBanners();  
+          // for a little bit of animation we remove the original line which is  //navigateAndClearHistory(context, HomeScreen.routeName)
+          Navigator.pushAndRemoveUntil(
+            context, 
+            BouncyPageRoute(
+              widget: HomeScreen()
+            ), 
+          ModalRoute.withName(HomeScreen.routeName)
+          );
       } on OdooException catch (e) {
         setState(() {
           showLoadingIndicator = false;
         });
         print(e);
-        ScaffoldMessenger.of(context)
-            .showMaterialBanner(MaterialBanner(
+        ScaffoldMessenger.of(context).showMaterialBanner(MaterialBanner(
           backgroundColor: Colors.yellow,
           content: const Text(
             "Invalid Email or Password",
@@ -437,8 +431,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 )
           ],
+       
         ));
-      }     
+        globalClient.close();
+
+      } 
     }
   }
 

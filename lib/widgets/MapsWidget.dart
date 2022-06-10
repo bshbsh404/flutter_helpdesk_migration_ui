@@ -1,9 +1,10 @@
 import 'dart:async';
-
+import 'dart:developer';
 import 'package:after_layout/after_layout.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicket.dart';
@@ -12,11 +13,15 @@ import 'package:shopping_app_ui/util/size_config.dart';
 import '../colors/Colors.dart';
 import '../util/Util.dart';
 import 'Styles.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 //For demo, we will set this value to const
 const double CAMERA_ZOOM=17.0;
 const double CAMERA_TILT=0;
 const double CAMERA_BEARING=0;
+
+final locationProvider = Provider<String>((ref) => 'location... ');
 
 
 class MapsWidget extends StatefulWidget {
@@ -35,6 +40,8 @@ class MapsWidget extends StatefulWidget {
 class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMixin, 
       WidgetsBindingObserver,AfterLayoutMixin
 {
+
+  
   BitmapDescriptor siteLocationIcon;
   Set<Marker> _markers = {};
   Set<Circle> _circles = {};
@@ -66,10 +73,7 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
     rootBundle.loadString('assets/json/googlemapsapi/aubergine.txt').then((string) {
     _mapStyle = string;});
     getGeoLocatorPermission();
-    print("what is my currentlat"+currentLat.toString());
-    print('site lat long: '+ (widget.partner_lat.toString())); 
     _callCustomMarker(); // this is compulsory to get the custom marker, otherwise null error are thrown.
-    
   }
   @override
   bool get wantKeepAlive => true;
@@ -102,15 +106,24 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   Future<void> _getCurrentUserLocation() async {
    final GoogleMapController controller = await _controller.future;
    Position  currentLocation;
+
+  
    try {
-     currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-     setState(() {
+     //getcurrentlocationb ased on last known
+     currentLocation = await Geolocator.getLastKnownPosition();
+     print("apakah ini anak muda");
+     //getlocation if last known is not get. this probably will tweak performance a little bit. because calling for position takes a lot of utilization.
+     if(currentLocation == null){
+      currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      print("bro we cannot find last known");
+     }
+     /*setState(() {
        currentLat = currentLocation.latitude;
        currentLong = currentLocation.longitude;
-     });
-     } on Exception {
-       currentLocation = null;
-       }
+     });*/
+   } on Exception {
+    currentLocation = null;
+    }
     controller.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(
         bearing: 0,
@@ -213,6 +226,15 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   FutureOr<void> afterFirstLayout(BuildContext context) {
     throw UnimplementedError();
   }
+  
+
+  Future<String> getAddress() async {
+    List<Placemark> placemark = await placemarkFromCoordinates(widget.partner_lat, widget.partner_long);
+    String location = "${placemark[0].street},${placemark[0].subAdministrativeArea},${placemark[0].administrativeArea},${placemark[0].postalCode},${placemark[0].country}";
+    
+    return location;  
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -243,12 +265,21 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
                 },              
               ),        
             ),
-            floatingActionButton: Padding(
+            floatingActionButton:_buildFAB(),          
+    );
+  }
+  Widget _buildFAB(){
+
+            if (widget.partner_lat == null || widget.partner_long == null )
+              return Container();
+            else          
+              return Padding(
               padding: const EdgeInsets.symmetric(vertical: 320,horizontal: 2),
               //EdgeInsets.symmetric(vertical: SizeConfig.screenHeight*0.38,horizontal: 2), //need to find good height so that googlemapsapi direction button are shown too
               child: Column(
                 //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  
                   FloatingActionButton(
                   onPressed: _getCurrentUserLocation,
                   child: Icon(Icons.gps_fixed_outlined,
@@ -268,14 +299,7 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
                   ),
                 ],
               ),
-            )
-            
-    );
+            ) ;
   }
 }
-
-
-  
-
-
 
