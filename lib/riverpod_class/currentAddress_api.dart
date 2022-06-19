@@ -10,13 +10,26 @@ import 'currentLocation_api.dart';
 final currentaddressFutureProvider = FutureProvider<List<Placemark>>((ref) async {
   //we use ref.watch to listen to another provider, and we passed it to the
   //provider that we want to consume Here:currentlocationFutureprovider
+
   double latitude;
   double longitude;
-
-  final currentlocation = await ref.watch(currentlocationFutureProvider.future);
-  latitude = currentlocation.latitude;
-  longitude = currentlocation.longitude;
-  return fetchCurrentAddress(latitude, longitude);
+  try{
+  //  double latitude;
+  //  double longitude;
+    bool serviceEnabledLocation;
+    serviceEnabledLocation = await Geolocator.isLocationServiceEnabled();
+  //if(serviceEnabledLocation == true){
+    final currentlocation = await ref.watch(currentlocationFutureProvider.future);
+    latitude = currentlocation.latitude;
+    longitude = currentlocation.longitude;
+    return fetchCurrentAddress(latitude, longitude);
+  //}
+  }
+  catch (e)
+  {
+    return Future.error(e);
+  }
+  
 });
 
 Future<List<Placemark>> fetchCurrentAddress(latitude, longitude) async {

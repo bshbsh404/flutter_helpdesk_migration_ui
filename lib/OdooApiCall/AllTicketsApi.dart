@@ -8,23 +8,28 @@ import '../screens/authentication/LoginScreen.dart';
   
 //might need to import session id here, to get user id, to get to filter.
 class AllTicketsApi {
+  
     static Future <List<SupportTicketResPartner>> getAllSupportTickets() async{
-    var fetchTicketData = await globalClient.callKw({ //might need to be changed to widget.client.callkw later because of passing user id session.
-      'model': 'website.supportzayd.ticket',
-      'method': 'search_read',
-      'args': [],
-      'kwargs': {
-        'context': {}, //because by default odoo fields.char return False when its null, therefore we change the default return '' rather than false
-        'domain': [['state.name','!=','Staff Closed']],
-        'fields':[],
-      },
-    });
-    List listTicket = [];
-    listTicket = fetchTicketData; //fetchticketdata(var dynamic) is assigned to List, 
-    print ('Get All Support Ticket: '+ fetchTicketData.toString());
-    return listTicket.map((json) => SupportTicketResPartner.fromJson(json)).toList();
-    
-  }
+    try{
+      var fetchTicketData = await globalClient.callKw({ //might need to be changed to widget.client.callkw later because of passing user id session.
+        'model': 'website.supportzayd.ticket',
+        'method': 'search_read',
+        'args': [],
+        'kwargs': {
+          'context': {}, //because by default odoo fields.char return False when its null, therefore we change the default return '' rather than false
+          'domain': [['state.name','!=','Staff Closed']],
+          'fields':[],
+        },
+      });
+      List listTicket = [];
+      listTicket = fetchTicketData; //fetchticketdata(var dynamic) is assigned to List, 
+      print ('Get All Support Ticket: '+ fetchTicketData.toString());
+      return listTicket.map((json) => SupportTicketResPartner.fromJson(json)).toList();  
+      } catch(e){
+          
+        return Future.error(e.toString());
+      }
+    }
 
     static Future<int> countOpenSupportTickets(OdooClient client) async {
     var fetchTicketData = await client.callKw({ //might need to be changed to widget.client.callkw later because of passing user id session.
@@ -46,6 +51,8 @@ class AllTicketsApi {
     //listTicket =  fetchTicketData.map((json) => ClosedClosedSupportTicket.fromJson(json)).toList(); //convert our json data from odoo to list.
     return listTicket.map((json) => SupportTicket.fromJson(json)).toList().length;
   }
+
+  /*
       static Future<List<SupportTicketResPartner>> getAllSupportTicketsResPartner () async {
         //List combineddata = [];  //create an empty list to add them all later
         var dataSupportTicket = await getAllSupportTickets(); //get value of list1
@@ -84,7 +91,7 @@ class AllTicketsApi {
         dataSupportTicket.addAll(mappingResPartner);
         return dataSupportTicket; //now after we added all the datasupportticket mapping hehehehe! we return it      
         //return listpartnerimage.map((json) => SupportTicketResPartner.fromJson(json)).toList(); 
-      }
+      }*/
 
     static Future<List<ResPartner>> getResPartner (String respartner_id) async {
     var fetchTicketData = await globalClient.callKw({ //might need to be changed to widget.client.callkw later because of passing user id session.
@@ -95,7 +102,6 @@ class AllTicketsApi {
         'context': {}, //because by default odoo fields.char return False when its null, therefore we change the default return '' rather than false
         'domain': [['id','=',respartner_id]],
         'fields': [
-          '__last_update',
           'partner_latitude',
           'partner_longitude'
         ],

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:geolocator_platform_interface/src/models/position.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/ResPartner.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicketandResPartner.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
@@ -30,47 +32,69 @@ class MyAttendanceScreen extends StatefulWidget {
   _MyAttendanceScreenState createState() => _MyAttendanceScreenState();
 }
 
-class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
+class _MyAttendanceScreenState extends State<MyAttendanceScreen> with SingleTickerProviderStateMixin{
 
   TextStyle orderStatusInfoTextStyle = TextStyle(
     fontSize: 11,
     fontFamily: poppinsFont,
     color: Colors.black.withOpacity(0.6),
   );
-  double partnerLat;
-  double partnerLong;
+  double partnerLat; //dont initialize it, this is for a late field.
+  double partnerLong; //same as this one, follow the rules of partnerLat
   String checkin = ''; // jst for temporary variable and also for ternary operation on slideaction
   String checkout = '';
-  //either way we will have to add 8 hours to convert to Malaysia Time (KL)
+
   //all fetchedcheck fields are used for attendanceprovider to give checkin and checkout time
   //fetchedcheck fields are declared at the top because it is needed to be used as conditionals in slide to action 
   DateTime fetchedCheckout;
   DateTime fetchedCheckout_plus8;
   DateTime fetchedCheckin;
   DateTime fetchedCheckin_plus8;
+  
 
   final panelController = PanelController();
   double currentlatitude; //we try to sync provider data with the parameters in slidetocheckin consumer
   double currentlongitude; //we try to sync provider data with the parameters in slidetocheckin consumer
-  String fullAddress; //for data in slidetocheckin
+  String fullAddress;
+  // isLocationDone is used to set flag to true after we manage to fetch location,.. this flag is to be used for slide to check in, if no location is get/error, slide to checkin will appear as container, as sliding it might cause unknown bugs especially on singletickercancel error.
+  // another thing is to be proper, we will only show slide to checkin after location is get, because this will prevent user from doing mistakes, in easy word, it makes it more user friendly.
+  bool _isLocationDone;
+
+  AnimationController controller; //animation upon slide to check in
 
   Future<void> getResPartnerData() async {
-    var listResPartner = await AllTicketsApi.getResPartner(widget.respartner_id);
-    print(widget.respartner_id);
 
-    setState(() {
-      for(int i=0;i<listResPartner.length;i++){
-      partnerLat= listResPartner[i].partner_latitude;
-      partnerLong= listResPartner[i].partner_longitude;
+    //first check if widget.respartner_id exist
+    if (widget.respartner_id !='' )
+    {
+      var listResPartner = await AllTicketsApi.getResPartner(widget.respartner_id);
+      print(widget.respartner_id);
+      setState(() {
+        for(int i=0;i<listResPartner.length;i++){
+        partnerLat= listResPartner[i].partner_latitude;
+        partnerLong= listResPartner[i].partner_longitude;
+      }
+      });    
     }
-    });    
-    print('tiba masanya kamu faham anak muda: '+listResPartner.toString());
   }
 
   @override
   void initState(){
     super.initState();
     getResPartnerData();
+    controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds:3),
+    );
+
+    //so that after animation show we can directly pop out of it/do what we want eg:reset controller
+    controller.addStatusListener((status) async {
+      if (status == AnimationStatus.completed){
+        Navigator.pop(context);
+        controller.reset();
+      }
+    });
+    //context.read()
   }
 
   @override
@@ -123,6 +147,132 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
       ),
     );
     }
+
+  void showDoneDialog() => 
+  showDialog(
+    barrierDismissible: true,
+    context: context,
+    builder: (context) => Dialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Lottie.asset(
+            'assets/json/lottieJson/check_done.json',
+            repeat: false,
+            controller: controller,
+            onLoaded: (composition) {
+              controller.duration = composition.duration;
+              controller.forward();
+          }),
+          Text('Success: Attendance Recorded',style: Theme.of(context).textTheme.subtitle1.copyWith(
+             fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),),
+            const SizedBox(height:16),
+        ],
+      ), 
+    )
+  );
+
+  void showFailedCheckInDialog() => 
+  showDialog(
+    barrierDismissible: true,
+    context: context,
+    builder: (context) => Dialog(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Lottie.asset(
+            'assets/json/lottieJson/cross-unapproved.json',
+            repeat: false,
+            //controller: controller,
+            //onLoaded: (composition) {
+            //  controller.duration = composition.duration;
+            //  controller.forward();
+            //}
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('Error: You are out of allowed check in radius!',style: Theme.of(context).textTheme.subtitle1.copyWith(
+               fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),textAlign: TextAlign.center,),
+          ),
+          const SizedBox(height:16),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('Please get nearer to your Customer location and perform Check-In inside the allowed circle radius. \n\nThank you.',style: Theme.of(context).textTheme.subtitle2.copyWith(
+            ),textAlign: TextAlign.center,),
+          ),
+        ],
+      ), 
+    )
+  );
+
+  void showFailedDialog(e) => 
+  showDialog(
+    barrierDismissible: true,
+    context: context,
+    builder: (context) => Dialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Lottie.asset(
+            'assets/json/lottieJson/cross-unapproved.json',
+            repeat: false,
+            controller: controller,
+            onLoaded: (composition) {
+              controller.duration = composition.duration;
+              controller.forward();
+            }
+          ),
+          Text('Error: failed to check in! Details: $e ',style: Theme.of(context).textTheme.subtitle1.copyWith(
+             fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),),
+          const SizedBox(height:16),
+        ],
+      ), 
+    )
+  );
+
+  void showLoadingDialog() => 
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (context) => Dialog(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Lottie.asset(
+            'assets/json/lottieJson/loading-animation.json',
+            repeat: false,
+            controller: controller,
+            onLoaded: (composition) {
+              controller.duration = composition.duration;
+              controller.forward();
+            }
+          ),
+          const SizedBox(height:16),
+        ],
+      ), 
+    )
+  );
+
+  Widget buildrefreshButtonWithIcon(WidgetRef ref){
+    return Container( //container might be necessary because we dont want address to cause renderflow problem, address is related to iconbutton location too.
+      width: SizeConfig.screenWidth*0.09,
+      
+      
+      child: InkWell(child: CircleAvatar(
+        backgroundColor: primaryColor,
+        child: IconButton(
+          highlightColor: Colors.white,
+          onPressed: (){
+            ref.refresh(currentlocationFutureProvider);  // we willl just refresh the root cause which is currentlocationprovider cause , currentlocationaddress watch on currentlocationprovider
+          },        
+          icon: Icon(Icons.refresh_outlined,
+          color: Colors.white,                       
+        )),
+      ),
+      )
+    ); 
+  }
 
   Widget buildDragHandle()  => InkWell(
     child:Center(
@@ -320,6 +470,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                         String addressLine4 = "${placemark[0].country}";
                         fullAddress = '$addressLine1,\n$addressLine2\n$addressLine3\n$addressLine4'; //this is to be inserted to data inside slidetocheck
 
+
                         return buildListRowAddress(
                           Icon(Icons.location_pin, size:30),//size: SizeConfig.screenHeight*0.030),
                           'Location',
@@ -329,7 +480,23 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                           addressLine4,
                         );   
                       },
-                      error: (e,stack) => Text('Error: unable to get location address\n Details $e'), 
+                      error: (e,stack){
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text('Error occured!\nDetails $e', textAlign: TextAlign.start,),
+                            ),
+                            
+                            Consumer(          
+                            builder: (BuildContext context, WidgetRef ref, Widget child) { 
+                              return buildrefreshButtonWithIcon(ref);     
+                            },
+            ),
+                          ],
+                        );
+                        
+                        }, 
                       loading: () => const CircularProgressIndicator()
                     );
                   },
@@ -471,12 +638,13 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
                       data:(value){
                       currentlatitude = value.latitude; //value to be inserted when slide to check in
                       currentlongitude = value.longitude; //same as currentlatitude line
+                      _isLocationDone = true;
                         return Text(
                           value.toString(), style: Theme.of(context).textTheme.subtitle2.copyWith(
                           fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
                         ));
                       },
-                      error: (e,stack) => Text('Error! Details$e'), 
+                      error: (e,stack) => Text('Error! Details$e'),  //TODO:// we should show old location too if error happens, we should persist the old data 
                       loading: () => const CircularProgressIndicator()
                     );          
 
@@ -507,13 +675,14 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
           builder: (BuildContext context, WidgetRef ref, Widget child) { 
             final watchCheckInTime = ref.watch(attendanceProvider).checkInTime;
             final watchCheckOutTime = ref.watch(attendanceProvider).checkOutTime;
+            final watchLastKnownLocation = ref.read(lastknownlocationFutureProvider);
 
             //if (widget.supporticket.check_in != ''){
             //  ref.read(attendanceProvider)
             //}
 
           
-            return   watchCheckOutTime != '' || widget.supporticket.check_out != '' || checkout != ''
+            return   watchCheckOutTime != '' || widget.supporticket.check_out != '' || checkout != '' || _isLocationDone != true //container will be return if one of these conditions are met.
             ? Container() 
             : SlideAction(
               
@@ -524,7 +693,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
               ?  'Slide to Check in' 
               :  watchCheckOutTime == '' || widget.supporticket.check_out == ''//AND if we found no data for check out after slide to check out
               ? 'Slide to Check Out' // then display slide to check out
-              : 'No more slide, hafiz please disable this one',
+              : 'Finished',
 
               textStyle: normalTextStyle,      
               outerColor: isDarkMode(context) ? Colors.white : Colors.white,
@@ -532,20 +701,54 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
               key: key,
               
               onSubmit: () {    
+
                 Future.delayed(
-                  Duration(milliseconds: 500),
+                  Duration(milliseconds: 900),
                   () => key.currentState.reset());  
                 // if not check in, fill check in first, if already check in, then fill checkout. 
                 //firstly, we have to put the value of fetched data (if it exist) into attendance provider first. , this should be done at top of build method
               
-                (watchCheckInTime == '' && widget.supporticket.check_in =='') //|| widget.supporticket.check_in =='' && watchCheckInTime != ''  //&& widget.supporticket.check_in ==''
-                ? ref.read(attendanceProvider.notifier).updateCheckInWithTicketId(
-                  widget.supporticket.ticket_id, currentlatitude.toString(), currentlongitude.toString(), fullAddress)
+                if (watchCheckInTime == '' && widget.supporticket.check_in =='') //|| widget.supporticket.check_in =='' && watchCheckInTime != ''  //&& widget.supporticket.check_in ==''
+                // ignore: unnecessary_statements
+                {
+                  watchLastKnownLocation.when(
+                    data:(value){
+                      //let say we got the last known location, then we calculate if the last known location is in the circle radius or not
+                      var distance = GeolocatorPlatform.instance.distanceBetween( partnerLat, partnerLong, value.latitude, value.longitude);
+                      if (distance < 1000){ //TODO set the 1000 as shared preference OR, AND fetch the value of radius from website..supportzayd.settings. if there is no settings for it , go create one!
+                        //then we will refresh the location provider, so that we will get the latest location latitude and location address 
+                        //ref.refresh(attendanceProvider).checkInTime;
+                        //then we will update the value here
+                        ref.read(attendanceProvider.notifier).updateCheckInWithTicketId(
+                        widget.supporticket.ticket_id, currentlatitude.toString(), currentlongitude.toString(), fullAddress);
+                        return showDoneDialog();  
+                      }else{
+                        //else we throw error animation and reset the checkintime to ''
+                        showFailedCheckInDialog();
+                        ref.read(attendanceProvider).checkInTime = ''; 
+                      }
+                      },
+                    error: (e,stack) => {
+                      showFailedDialog(e),
+                    }, 
+                    loading: () => showLoadingDialog(),
+                  );               
+                }
                   
-                :   watchCheckOutTime == '' || widget.supporticket.check_out == '' ? ref.read(attendanceProvider.notifier).updateCheckOutWithTicketId(
-                  widget.supporticket.ticket_id, currentlatitude.toString(), currentlongitude.toString(), fullAddress)
-
-                : null;
+                else if  (watchCheckOutTime == '' || widget.supporticket.check_out == '')
+                {
+                try{
+                  ref.read(attendanceProvider.notifier).updateCheckOutWithTicketId(
+                  widget.supporticket.ticket_id, currentlatitude.toString(), currentlongitude.toString(), fullAddress);
+                  showDoneDialog();
+                }catch(e){
+                  //clear watch.checkout data, so that UI wont show updated checkout
+                  ref.read(attendanceProvider).checkOutTime = '';
+                  showFailedDialog(e);
+                }
+           
+                }
+                
 
                 print("${widget.supporticket.check_in}==widget.checkin && ${watchCheckInTime} == watchcheckin");
                 print("${widget.supporticket.check_out}==widget.checkout && ${watchCheckOutTime} == watchcheckout $checkout == checkout ");
@@ -648,22 +851,24 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
             Spacer(),
             Consumer(          
               builder: (BuildContext context, WidgetRef ref, Widget child) {
-              return Container( //container might be necessary because we dont want address to cause renderflow problem, address is related to iconbutton location too.
-                width: SizeConfig.screenWidth*0.09,
-                
-                child: InkWell(child: CircleAvatar(
-                  backgroundColor: primaryColor,
-                  child: IconButton(
-                    highlightColor: Colors.white,
-                    onPressed: (){
-                      ref.refresh(currentlocationFutureProvider);  // we willl just refresh the root cause which is currentlocationprovider cause , currentlocationaddress watch on currentlocationprovider
-                    },        
-                    icon: Icon(Icons.refresh_outlined,
-                    color: Colors.white,                       
-                  )),
-                ),
-              )
-              );          
+              return buildrefreshButtonWithIcon(ref);
+              //return Container( //container might be necessary because we dont want address to cause renderflow problem, address is related to iconbutton location too.
+              //  width: SizeConfig.screenWidth*0.09,
+              //  
+              //  
+              //  child: InkWell(child: CircleAvatar(
+              //    backgroundColor: primaryColor,
+              //    child: IconButton(
+              //      highlightColor: Colors.white,
+              //      onPressed: (){
+              //        ref.refresh(currentlocationFutureProvider);  // we willl just refresh the root cause which is currentlocationprovider cause , currentlocationaddress watch on currentlocationprovider
+              //      },        
+              //      icon: Icon(Icons.refresh_outlined,
+              //      color: Colors.white,                       
+              //    )),
+              //  ),
+              //)
+              //);          
               },
             ),
           ],
@@ -755,7 +960,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> {
   void dispose(){
     super.dispose();
     print("Attendancescreen disposed");
-    
+    controller: controller;
 
   }
 

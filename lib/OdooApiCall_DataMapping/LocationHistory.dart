@@ -17,10 +17,6 @@ class LocationHistory {
    this.check_out,
    this.check_out_address, 
    this.ticket_id, 
-   //required this.check_in_lat, 
-   //required this.check_in_long, 
-   //required this.check_out_lat, 
-   //required this.check_out_long
    });
 
   static LocationHistory fromJson(Map<String, dynamic> json) => LocationHistory(
@@ -31,11 +27,6 @@ class LocationHistory {
       check_out : json['check_out'] == false ? json['check_out'] = ' ' : json['check_out'].toString(), 
       check_in_address: json['check_in_address'] == false ? json['check_in_address'] = ' ' : json['check_in_address'].toString(), 
       check_out_address: json['check_out_address'] == false ? json['check_out_address'] = ' ' : json['check_out_address'].toString(),
-      
-      //check_in_lat:'',  
-      //check_in_long: '', 
-      //check_out_lat: '', 
-      //check_out_long: '',
   );   
 }
 

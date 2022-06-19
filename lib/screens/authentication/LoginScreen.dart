@@ -14,11 +14,9 @@ import 'package:shopping_app_ui/util/Util.dart';
 //using client and session will not cause security issues on global by the way, it is only used for calling data from API.
 //alternative would be to passvalue using stateful widget when passing in navigation.
 
-var URL = 'http://192.168.0.123:8069';//'http://127.0.0.1:8069';//'http://localhost:8069';//'http://10.0.0.226:8069'; //192.168.0.123
+var URL = 'http://192.168.0.123:8069'; //'http://192.168.0.123:8069';//'http://127.0.0.1:8069';//'http://localhost:8069';//'http://10.0.0.226:8069'; //192.168.0.123
 var globalClient = OdooClient(URL);
 var globalSession;
-
-
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -387,9 +385,21 @@ class _LoginScreenState extends State<LoginScreen> {
         showLoadingIndicator = true;
       });
 
-      try {
-        globalSession = await globalClient.authenticate(
-            'sigmarectrix.com', email.text, password.text);
+      /*Future<dynamic> timeoutAfter({int sec, Function() onTimeout}) async {
+        return Future.delayed(Duration(seconds: sec), onTimeout);
+      }*/
+
+      try{
+
+        /*globalSession = await Future.any([
+          globalClient.authenticate('sigmarectrix.com', email.text, password.text), //try to login first, we hope this returns first
+          timeoutAfter(sec: 2, onTimeout: () => 'Timed Out! Internet connection error or wrong url destination given, please check with your admin', )
+            
+        ]); 
+        */
+
+        globalSession = await globalClient.authenticate('sigmarectrix.com', email.text, password.text);
+
         setState(() {
           showLoadingIndicator = false;
         });
@@ -402,7 +412,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ), 
           ModalRoute.withName(HomeScreen.routeName)
           );
-      } on OdooException catch (e) {
+
+      } on OdooException catch(e) {
         setState(() {
           showLoadingIndicator = false;
         });

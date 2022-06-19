@@ -11,9 +11,23 @@ class LocationApi extends ChangeNotifier{
 //get currentlocation position, can be used for itself or can be iniside current_address too. multiPurpose.
 final currentlocationFutureProvider = FutureProvider<Position>((ref) => fetchCurrentLocation());
 Future<Position> fetchCurrentLocation() async {
-  Position currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  try{
+  Position currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
   return currentLocation;
+  }
+  catch (e){
+    return Future.error(e);
+  }
 }
+
+final lastknownlocationFutureProvider = FutureProvider<Position>((ref) => fetchLastKnownLocation());
+Future<Position> fetchLastKnownLocation() async {
+  Position lastKnownLocation = await Geolocator.getLastKnownPosition();
+  return lastKnownLocation;
+}
+
+
+ //currentLocation = await Geolocator.getLastKnownPosition();
 
 
 

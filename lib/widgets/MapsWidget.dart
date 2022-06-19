@@ -15,6 +15,7 @@ import '../util/Util.dart';
 import 'Styles.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_app_ui/riverpod_class/currentLocation_api.dart';
 
 //For demo, we will set this value to const
 const double CAMERA_ZOOM=17.0;
@@ -69,7 +70,7 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   void initState() {
     // TODO: implement initState
     super.initState();
-    streamLocation();
+    //streamLocation();
     rootBundle.loadString('assets/json/googlemapsapi/aubergine.txt').then((string) {
     _mapStyle = string;});
     getGeoLocatorPermission();
@@ -94,10 +95,11 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
           var distance = GeolocatorPlatform.instance.distanceBetween( (widget.partner_lat), widget.partner_long,position.latitude, position.longitude);
           print(position == null ? 'Unknown' : '${position.latitude.toString()}, ${position.longitude.toString()}');
           if (distance < 1000){
-            print
-            ("return true: let this user check in ");
+            print("return true: let this user check in ");
+            
           }else{
             print("return false: do not let this user check in ");
+          
           } 
       }
     );
@@ -111,16 +113,11 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
    try {
      //getcurrentlocationb ased on last known
      currentLocation = await Geolocator.getLastKnownPosition();
-     print("apakah ini anak muda");
-     //getlocation if last known is not get. this probably will tweak performance a little bit. because calling for position takes a lot of utilization.
+     //getlocation ifprint("apakah ini anak muda"); last known is not get. this probably will tweak performance a little bit. because calling for position takes a lot of utilization.
      if(currentLocation == null){
       currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       print("bro we cannot find last known");
      }
-     /*setState(() {
-       currentLat = currentLocation.latitude;
-       currentLong = currentLocation.longitude;
-     });*/
    } on Exception {
     currentLocation = null;
     }
@@ -192,13 +189,14 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   void dispose() {
     super.dispose();
     WidgetsBinding.instance.removeObserver(this); //ifnot mistaken this is so that maps wont return to blank if we tabout, and tab in back to the apps //
-    positionStream.cancel(); //dispose listening to stream position
+    //positionStream.cancel(); //dispose listening to stream position
     print("mapswidget disposed");
   }
 
   void getGeoLocatorPermission() async{
     bool serviceEnabled;
     LocationPermission permission;
+    
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -301,5 +299,7 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
               ),
             ) ;
   }
+  
 }
+//var globalAllowCheckIn = false; //set default to false yeah. 
 

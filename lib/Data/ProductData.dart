@@ -203,7 +203,7 @@ List<Product> getCategoryProducts(int categoryIndex) {
 }
 
 var productDetails = [
-  {'key': brandLabel, 'value': 'ABC brand'},
+  {'key': brandLabel, 'value': 'ABC brand let say this is long let say this is long let say this is long'},
   {'key': typeLabel, 'value': 'Mobile & Accessories'},
   {'key': weightLabel, 'value': '382 gram'},
   {'key': osLabel, 'value': 'Android 11'},

@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:shopping_app_ui/Data/ProductData.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/ResPartner.dart';
@@ -13,6 +14,7 @@ import 'package:shopping_app_ui/model/Product.dart';
 import 'package:shopping_app_ui/model/ProductInCart.dart';
 import 'package:shopping_app_ui/screens/launch/HomeScreen.dart';
 import 'package:shopping_app_ui/screens/products/MyAttendanceScreen.dart';
+import 'package:shopping_app_ui/screens/products/TicketDetailScreen.dart';
 import 'package:shopping_app_ui/util/RemoveGlowEffect.dart';
 import 'package:shopping_app_ui/util/size_config.dart';
 import 'package:shopping_app_ui/widgets/Styles.dart';
@@ -62,24 +64,11 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
   @override
   void initState(){
     super.initState();
-    checkOdooSession();
     print ('find out whether sessionId exist!?' + globalClient.sessionId.id.toString());
     print('find out what the fuck is in globalsession '+ globalSession.toString());
    
   
   }
-
-
-  //TODO remove this after debugging stage finished
-  Future<void> checkOdooSession () async {
-    try {
-      await globalClient.checkSession();
-      print ('session is still alive in myticketscreen');
-    } on OdooSessionExpiredException {
-      print('Session expired in myticketscreen');
-    }
-  }
-
 
   @override
   void dispose() {
@@ -129,8 +118,65 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                   switch (snapshot.connectionState) {
                     case ConnectionState.waiting:
                       return AnimatedContainers(context);
-                    default:
-                      if (snapshot.hasError) {
+
+                    case ConnectionState.none:
+                      break;
+                                  
+
+                    case ConnectionState.active: //this is for stream so, futurebuilder does not need to use this.
+                      // TODO: Handle this case.
+                    break;
+
+                    case ConnectionState.done:
+                      if(snapshot.hasData){
+                        return buildSupportTickets(//partners,
+                        tickets);
+                      }
+                      else if (snapshot.hasError){
+                        bool loadText;
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Lottie.asset(
+                              'assets/json/lottieJson/no-internet.json',
+                              repeat: true,
+                            ),
+                            
+                            
+                            const SizedBox(height:(10)),
+                            Text('Unable to fetch data, please refresh and try again.', style: Theme.of(context).textTheme.subtitle1.copyWith(
+                              fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),textAlign: TextAlign.center,)
+                          ],
+                        );
+                        //return Text('Some error has occured on snapshot');
+                      }
+                      else if (snapshot.hasData == false){
+                        return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: SvgPicture.asset(
+                              isDarkMode(context)
+                                  ? '$darkIconPath/empty_wishlist.svg'
+                                  : '$lightIconPath/empty_wishlist.svg',
+                              height: SizeConfig.screenHeight * 0.5,
+                              width: double.infinity,
+                            ),
+                          ),
+                          Text(
+                            'No tickets found!',
+                            style: Theme.of(context).textTheme.headline6,
+                          )
+                        ],
+                      );
+                      }
+                      else
+                        return Center(child: Text('ConnectionDone but some error occured!'));
+                                    
+                    /*default:
+                      if (snapshot.hasError && snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: Text('Some error occurred!'));
                       } else if(tickets.length == 0) {
                         return Column(
@@ -153,11 +199,18 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                         ],
                       );
 
-                      }else {                      
+                      }else if (snapshot.hasData && snapshot.connectionState == ConnectionState.done){                      
                         return buildSupportTickets(//partners,
                         tickets);
                       }
+
+                      else {
+                        return Text('State: ${snapshot.connectionState}');
+                      }
+
+                   */   
                   }
+                  return Text('Connection is broken,Some error ocurred! ${snapshot.connectionState}');
                 },
               ),                    
                 /*myTicketProducts.length > 0
@@ -214,43 +267,10 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
         String unique = 'empty' ;
         print('is the problem here before getpartnerimage?');
         print('can we get the supportticket_id here?' +supportticket.partner_id.toString());
-        //var respartnerlist = AllTicketsApi.getPartnerImage(supportticket.partner_id); //fetch partner image data based on support ticket ID.
-        
-        //getPartnerImage(supportticket.partner_id); //call the class for fetching partner image data
-        /*
-        FutureBuilder <List<ResPartner>>(
-          future: AllTicketsApi.getPartnerImage(supportticket.partner_id),
-          // ignore: missing_return
-          builder: (context, snapshot)   
-          {
-          if (snapshot.hasData){
-            print("This is the output in hasData ${snapshot.data[index].last_update}");
-
-            setState(() {
-            unique = snapshot.data[index].last_update;
-            unique = unique.replaceAll(RegExp(r'[^0-9]'), '');              
-            });
-            //unique = snapshot.data[index].last_update;
-            //unique = unique.replaceAll(RegExp(r'[^0-9]'), '');
-          }
-          else if(snapshot.hasError){
-            print("This is the output in snapshothaserror ${snapshot.data[index].last_update}");
-          }
-          else 
-            print("some error occured");
-          });
-          */
-
         print ('unique' + unique);
-
-
-        //var newPartnerList = partnerlist; //create  a temporary variable to store partnerlist value, because we doont want to turn partnerlist into String directly.
-        //print ('now we print partnerlist value: '+newPartnerList.toString());
-        unique = supportticket.last_update;   //assign unique here
-        unique = unique.replaceAll(RegExp(r'[^0-9]'), '');
         var avatarUrl;
 
-        if(supportticket.partner_id != null && unique != '')
+        if(supportticket.partner_id != null)
           avatarUrl= '${globalClient.baseURL}/web/image?model=res.partner&id=${supportticket.partner_id}&field=image_medium'; //&unique=$unique';
         else
           avatarUrl = null;
@@ -258,7 +278,10 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
           DateTime input = inputFormat.parse (supportticket.created_date);
           DateTime MYtimezone = input.add(Duration(hours:8));                    
           String create_date = DateFormat("dd/MM/yyyy hh:mm:ss a").format(MYtimezone); //use this variable, because malaysia timezone is +8 hours from UTC. database gives u UTC time
-          String respartner_id = supportticket.partner_id != null ? supportticket.partner_id : '';
+          String respartner_id = supportticket.partner_id != null ? supportticket.partner_id : ''; //we need this to pass non null partner_id data to the attendance screen, to get the partner_latitude and longitude
+          //field respartner_id is very important.
+          
+
         return Padding(
         padding: EdgeInsets.symmetric(
           horizontal: getProportionateScreenWidth(16),
@@ -271,364 +294,375 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Padding(
-            padding: EdgeInsets.all(getProportionateScreenWidth(8)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-
-                                
-                        avatarUrl != null ? CircleAvatar(
-
-                          backgroundImage: NetworkImage(avatarUrl, headers: {"X-Openerp-Session-Id":globalClient.sessionId.id}), 
-                          onBackgroundImageError: null,
-                          backgroundColor: Color.fromARGB(255, 150, 190, 223),     
-                          radius:getProportionateScreenWidth(35) )
-                          :                  
-                          CircleAvatar(
-                          backgroundColor: Color.fromARGB(255, 150, 190, 223),     
-                          radius:getProportionateScreenWidth(35) ),
-                          
-                        /*Image.asset(
-                          '$productImagesPath/${product.productImage}',
-                          height: getProportionateScreenWidth(80),
-                          width: getProportionateScreenWidth(80),
-                        ),*/
-                        SizedBox(width: getProportionateScreenWidth(10)),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                
-                                Container(
-                                  width: SizeConfig.screenWidth / 1.8,
-                                  child: Text(
-                                    '#${supportticket.ticket_number} ${supportticket.subject}',
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
-                                    style: Theme.of(context).textTheme.subtitle1.copyWith(
-                                          fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),
-                                    
-                                  ),
-                                
-                                ),
-                                SizedBox(height: getProportionateScreenHeight(5)),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    /*Text(
-                                      '\$' +
-                                          (product.originalPrice -
-                                                  (product.originalPrice *
-                                                      product.discountPercent /
-                                                      100))
-                                              .toStringAsFixed(2),
-                                      
-                                      '#${supportticket.ticket_id}',
-                                      style: Theme.of(context).textTheme.subtitle1.copyWith(
-                                          fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),
-                                    ),
-                                    SizedBox(
-                                      width: 10,
-                                    ),*/
-                                    Container(
-                                      width: SizeConfig.screenWidth / 1.8,
-                                      child: RichText(
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 2,
-                                        text: TextSpan(
-                                          children: [
-                                            WidgetSpan(
-                                              child: Icon(Icons.person,size: 20),
-                                            ),
-                                            TextSpan(
-                                              text: ' '+supportticket.equipment_user,
-                                              style: ticketScreensClickableLabelStyle,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    /*Text(
-                                      
-                                      'User: '+supportticket.equipment_user,
-                                      style: homeScreensClickableLabelStyle,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                    ),*/
-                                    /*SizedBox(
-                                      width: 10,
-                                    ),
-
-
-                                    Text(
-                                      '',
-                                      style: homeScreensClickableLabelStyle,
-                                    ),*/
-                                  ],
-                                ),
-
-                                
-
-                                  supportticket.partner_name != 'false'? 
-                                    Container(
-                                      width: SizeConfig.screenWidth / 1.8,
-                                      child: RichText(
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                        text: TextSpan(
-                                          children: [
-                                            WidgetSpan(
-                                              child: Icon(Icons.business,size: 20),
-                                            ),
-                                            TextSpan(
-                                              text: ' '+supportticket.partner_name.toString(),
-                                              style:Theme.of(context)
-                                              .textTheme
-                                              .bodyText2
-                                              .copyWith(
-                                                //decoration:
-                                                //    TextDecoration.lineThrough,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    )                               
-                                  :const SizedBox(),
-
-
+          //create Inkwell to head the items
+          child: InkWell(
+            child: Padding(
+              padding: EdgeInsets.all(getProportionateScreenWidth(8)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [                       
+                          avatarUrl != null ? CircleAvatar(
+                            backgroundImage: NetworkImage(avatarUrl, headers: {"X-Openerp-Session-Id":globalClient.sessionId.id}), 
+                            onBackgroundImageError: null,
+                            backgroundColor: Color.fromARGB(255, 150, 190, 223),     
+                            radius:getProportionateScreenWidth(35) )
+                            :                  
+                            CircleAvatar(
+                            backgroundColor: Color.fromARGB(255, 150, 190, 223),     
+                            radius:getProportionateScreenWidth(35) ),              
+                          /*Image.asset(
+                            '$productImagesPath/${product.productImage}',
+                            height: getProportionateScreenWidth(80),
+                            width: getProportionateScreenWidth(80),
+                          ),*/
+                          SizedBox(width: getProportionateScreenWidth(10)),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  
                                   Container(
                                     width: SizeConfig.screenWidth / 1.8,
-                                      child: RichText(
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                        text: TextSpan(
-                                          children: [
-                                            WidgetSpan(
-                                              child: Icon(Icons.date_range,size: 20),
-                                            ),
-                                            TextSpan(
-                                              text: ' '+create_date,
-                                              style:Theme.of(context)
-                                              .textTheme
-                                              .bodyText2
-                                              .copyWith(
-                                                //decoration:
-                                                //    TextDecoration.lineThrough,
-                                                color: Theme.of(context).textTheme.caption.color,
+                                    child: Text(
+                                      '#${supportticket.ticket_number} ${supportticket.subject}',
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                      style: Theme.of(context).textTheme.subtitle1.copyWith(
+                                            fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),
+                                      
+                                    ),
+                                  
+                                  ),
+                                  SizedBox(height: getProportionateScreenHeight(5)),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      /*Text(
+                                        '\$' +
+                                            (product.originalPrice -
+                                                    (product.originalPrice *
+                                                        product.discountPercent /
+                                                        100))
+                                                .toStringAsFixed(2),
+                                        
+                                        '#${supportticket.ticket_id}',
+                                        style: Theme.of(context).textTheme.subtitle1.copyWith(
+                                            fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight),
+                                      ),
+                                      SizedBox(
+                                        width: 10,
+                                      ),*/
+                                      Container(
+                                        width: SizeConfig.screenWidth / 1.8,
+                                        child: RichText(
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                          text: TextSpan(
+                                            children: [
+                                              WidgetSpan(
+                                                child: Icon(Icons.person,size: 20),
                                               ),
-                                            ),
-                                          ],
+                                              TextSpan(
+                                                text: ' '+supportticket.equipment_user,
+                                                style: ticketScreensClickableLabelStyle,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                  ),
-
-                                  SizedBox(height : getProportionateScreenHeight(10)),
-                                  Container(
-                                    width: SizeConfig.screenWidth / 2,
-                                      child: RichText(
+                                      /*Text(
+                                        
+                                        'User: '+supportticket.equipment_user,
+                                        style: homeScreensClickableLabelStyle,
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 2,
-                                        text: TextSpan(
-                                          children: [ 
-                                            supportticket.category_name != '' && supportticket.subcategory_name == ''
-                                            ?                            
-                                            TextSpan(                 
-                                              text: '• '+supportticket.category_name,
-                                              style:Theme.of(context)
-                                              .textTheme
-                                              .bodyText2
-                                              .copyWith(
-                                                decoration: TextDecoration.underline,
-                                                color: orangeredColor                                  
-                                              ),
-                                            ) :
-
-                                            supportticket.category_name !='' && supportticket.subcategory_name != ''
-                                            ?                                           
-                                            TextSpan( 
-                                              children: [            
-                                                TextSpan (                                            
-                                                  text: '• '+supportticket.category_name,
-                                                  style:Theme.of(context)
-                                                  .textTheme
-                                                  .bodyText2
-                                                  .copyWith(
-                                                    decoration: TextDecoration.underline,
-                                                    color: orangeredColor                                  
-                                                  )
-                                                ),
-                                                TextSpan(                                              
-                                                  text: ' '+'• '+supportticket.subcategory_name,
-                                                  style:Theme.of(context)
-                                                  .textTheme
-                                                  .caption
-                                                  .copyWith(                                                   
-                                                  ),
-                                                )
-                                              ]
-                                            ) 
-                                            : 
-                                            null                                       
-                                          ],
-                                        ),
+                                      ),*/
+                                      /*SizedBox(
+                                        width: 10,
                                       ),
+          
+          
+                                      Text(
+                                        '',
+                                        style: homeScreensClickableLabelStyle,
+                                      ),*/
+                                    ],
                                   ),
-                              ],
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                    InkWell(
-                      child: Container(
-                        padding: EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Icon(
-                          Icons.delete,
-                          size: 22,
-                          color: primaryColor,
-                        ),
+          
+                                  
+          
+                                    supportticket.partner_name != ''? 
+                                      Container(
+                                        width: SizeConfig.screenWidth / 1.8,
+                                        child: RichText(
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          text: TextSpan(
+                                            children: [
+                                              WidgetSpan(
+                                                child: Icon(Icons.business,size: 20),
+                                              ),
+                                              TextSpan(
+                                                text: ' '+supportticket.partner_name.toString(),
+                                                style:Theme.of(context)
+                                                .textTheme
+                                                .bodyText2
+                                                .copyWith(
+                                                  //decoration:
+                                                  //    TextDecoration.lineThrough,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      )                               
+                                    :const SizedBox(),
+          
+          
+                                    Container(
+                                      width: SizeConfig.screenWidth / 1.8,
+                                        child: RichText(
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          text: TextSpan(
+                                            children: [
+                                              WidgetSpan(
+                                                child: Icon(Icons.date_range,size: 20),
+                                              ),
+                                              TextSpan(
+                                                text: ' '+create_date,
+                                                style:Theme.of(context)
+                                                .textTheme
+                                                .bodyText2
+                                                .copyWith(
+                                                  //decoration:
+                                                  //    TextDecoration.lineThrough,
+                                                  color: Theme.of(context).textTheme.caption.color,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ),
+          
+                                    SizedBox(height : getProportionateScreenHeight(10)),
+                                    Container(
+                                      width: SizeConfig.screenWidth / 2,
+                                        child: RichText(
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                          text: TextSpan(
+                                            children: [ 
+                                              supportticket.category_name != '' && supportticket.subcategory_name == ''
+                                              ?                            
+                                              TextSpan(                 
+                                                text: '• '+supportticket.category_name,
+                                                style:Theme.of(context)
+                                                .textTheme
+                                                .bodyText2
+                                                .copyWith(
+                                                  decoration: TextDecoration.underline,
+                                                  color: orangeredColor                                  
+                                                ),
+                                              ) :
+          
+                                              supportticket.category_name !='' && supportticket.subcategory_name != ''
+                                              ?                                           
+                                              TextSpan( 
+                                                children: [            
+                                                  TextSpan (                                            
+                                                    text: '• '+supportticket.category_name,
+                                                    style:Theme.of(context)
+                                                    .textTheme
+                                                    .bodyText2
+                                                    .copyWith(
+                                                      decoration: TextDecoration.underline,
+                                                      color: orangeredColor                                  
+                                                    )
+                                                  ),
+                                                  TextSpan(                                              
+                                                    text: ' '+'• '+supportticket.subcategory_name,
+                                                    style:Theme.of(context)
+                                                    .textTheme
+                                                    .caption
+                                                    .copyWith(                                                   
+                                                    ),
+                                                  )
+                                                ]
+                                              ) 
+                                              : 
+                                              TextSpan(),                                 
+                                            ],
+                                          ),
+                                        ),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          )
+                        ],
                       ),
-                      onTap: () {
-                        /*
-                        setState(
-                          () {
-                            myTicketProducts.remove(product);
-                          },
-                        );
-                        */
-                      },
-                    ),
-                  ],
-                ),
-                Divider(),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: getProportionateScreenWidth(4),
-                    ),
-                    child:      
-                    /*supportticket.check_in != '' && supportticket.check_out != '' 
-                                  ? 'Done checked out'
-                                  : null,
-                              style: supportticket.check_in != '' && supportticket.check_out != '' 
-                                  ? Theme.of(context).textTheme.caption.copyWith(
-                                    fontFamily: poppinsFont,
-                                    color:Colors.white
-                                  )
-                    */
-                    supportticket.check_in != '' && supportticket.check_out != '' 
-                    ? 
-                    Text('Done checked out',
-                      style: Theme.of(context).textTheme.caption.copyWith(
-                        fontFamily: poppinsFont,
-                      )
-                    )                     
-                    :
-                    ElevatedButton(     
-                      onPressed:(){
-                        
-                        Navigator.push(
-                          context,
-                          OpenUpwardsPageRoute(child: MyAttendanceScreen(
-                            supportticket, respartner_id), 
-                            direction: AxisDirection.up)).then((value){
-                              setState((){
-                                
-                              });
-                            });                     
-                      } ,
-                      autofocus: true,
-                      style: ButtonStyle(
-                        elevation: MaterialStateProperty.resolveWith<double>(
-                        (Set<MaterialState> states) {
-                          if (states.contains(MaterialState.pressed))
-                            return 16;
-                          return null;
-                        }),
-                        //shape: RectangularRangeSliderTrackShap
-                        backgroundColor: MaterialStateProperty.all<Color>(primaryColor),
-                        
+                      InkWell(
+                        child: Container(
+                          padding: EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Icon(
+                            Icons.delete,
+                            size: 22,
+                            color: primaryColor,
+                          ),
                         ),
-           
-                      child: RichText(
-                        text: TextSpan(
-                          children: [                    
-                            TextSpan(
-                              text: supportticket.check_in == '' && supportticket.check_out == '' 
-                                  ? 'CHECK IN'
-                                  : supportticket.check_in  != '' && supportticket.check_out == ''
-                                  ? 'CHECK OUT'
-                                  : null,
-                                  style: Theme.of(context).textTheme.button.copyWith(
+                        onTap: () {
+                          /*
+                          setState(
+                            () {
+                              myTicketProducts.remove(product);
+                            },
+                          );
+                          */
+                        },
+                      ),
+                    ],
+                  ),
+                  Divider(),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: getProportionateScreenWidth(4),
+                      ),
+                      child:      
+                      /*supportticket.check_in != '' && supportticket.check_out != '' 
+                                    ? 'Done checked out'
+                                    : null,
+                                style: supportticket.check_in != '' && supportticket.check_out != '' 
+                                    ? Theme.of(context).textTheme.caption.copyWith(
                                       fontFamily: poppinsFont,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.none,         
-                                  ),
+                                      color:Colors.white
+                                    )
+                      */
+                      supportticket.check_in != '' && supportticket.check_out != '' 
+                      ? 
+                      Text('Done checked out',
+                        style: Theme.of(context).textTheme.caption.copyWith(
+                          fontFamily: poppinsFont,
+                        )
+                      )                     
+                      :
+                      ElevatedButton(     
+                        onPressed:(){
+                          
+                          Navigator.push(
+                            context,
+                            OpenUpwardsPageRoute(child: MyAttendanceScreen(
+                              supportticket, respartner_id), 
+                              direction: AxisDirection.up)).then((value){
+                                setState((){
+                                  
+                                });
+                              });                     
+                        } ,
+                        autofocus: true,
+                        style: ButtonStyle(
+                          elevation: MaterialStateProperty.resolveWith<double>(
+                          (Set<MaterialState> states) {
+                            if (states.contains(MaterialState.pressed))
+                              return 16;
+                            return null;
+                          }),
+                          //shape: RectangularRangeSliderTrackShap
+                          backgroundColor: MaterialStateProperty.all<Color>(primaryColor),
+                          
+                          ),
+             
+                        child: RichText(
+                          text: TextSpan(
+                            children: [                    
+                              TextSpan(
+                                text: supportticket.check_in == '' && supportticket.check_out == '' 
+                                    ? 'CHECK IN'
+                                    : supportticket.check_in  != '' && supportticket.check_out == ''
+                                    ? 'CHECK OUT'
+                                    : null,
+                                    style: Theme.of(context).textTheme.button.copyWith(
+                                        fontFamily: poppinsFont,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.none,         
+                                    ),
+                                /*
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    setState(
+                                      () {
+                                        
+                                        if (!product.isAddedInCart) {
+                                          addProductToCart(product, true);
+                                        }
+                                        
+                                      },
+                                    );
+                                  },
+                                */
+                              ),
                               /*
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  setState(
-                                    () {
-                                      
-                                      if (!product.isAddedInCart) {
-                                        addProductToCart(product, true);
-                                      }
-                                      
-                                    },
-                                  );
-                                },
+                              TextSpan(
+                                text: product.isAddedInCart
+                                    ? 'Added in cart'
+                                    : addToCartLabel,
+                                style: product.isAddedInCart
+                                    ? Theme.of(context).textTheme.caption
+                                    : homeScreensClickableLabelStyle,
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () {
+                                    setState(
+                                      () {
+                                        if (!product.isAddedInCart) {
+                                          addProductToCart(product, true);
+                                        }
+                                      },
+                                    );
+                                  },
+                              ),
                               */
-                            ),
-                            /*
-                            TextSpan(
-                              text: product.isAddedInCart
-                                  ? 'Added in cart'
-                                  : addToCartLabel,
-                              style: product.isAddedInCart
-                                  ? Theme.of(context).textTheme.caption
-                                  : homeScreensClickableLabelStyle,
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  setState(
-                                    () {
-                                      if (!product.isAddedInCart) {
-                                        addProductToCart(product, true);
-                                      }
-                                    },
-                                  );
-                                },
-                            ),
-                            */
-                            
-                          ],
+                              
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+            onTap: () {                         
+              Navigator.push(
+                context,
+                OpenUpwardsPageRoute(child: TicketDetailScreen(
+                  supportticket, respartner_id), 
+                  direction: AxisDirection.right)).then((value){
+                    setState((){
+                      
+                    });
+                  }); 
+            }
           ),
+          
         ),
       //),
       );

@@ -4,6 +4,9 @@
 
 // @dart = 2.8
 
+//aim is jus tto change, some of the icon, for eg: shipped, delivered, with related icons to supportticket services
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
@@ -23,6 +26,12 @@ enum StepState {
 
   /// A step that displays a aeroplane icon in its circle.
   shipped,
+
+  /// A step that displays a support_aggent icon in its circle
+  created,
+
+  // A step that displays a engineer icon in its circle
+  engineer_arrived,
 
   /// A step that displays a box icon in its circle.
   delivered,
@@ -44,7 +53,7 @@ enum StepState {
   error,
 }
 
-/// Defines the [MyCustomStepper]'s main axis.
+/// Defines the [MyCustomStepperHafiz]'s main axis.
 enum StepperType {
   /// A vertical layout of the steps with their content in-between the titles.
   vertical,
@@ -67,17 +76,17 @@ const double _kStepSize = 24.0;
 const double _kTriangleHeight =
     _kStepSize * 0.866025; // Triangle height. sqrt(3.0) / 2.0
 
-/// A material step used in [MyCustomStepper]. The step can have a title and subtitle,
+/// A material step used in [MyCustomStepperHafiz]. The step can have a title and subtitle,
 /// an icon within its circle, some content and a state that governs its
 /// styling.
 ///
 /// See also:
 ///
-///  * [MyCustomStepper]
+///  * [MyCustomStepperHafiz]
 ///  * <https://material.io/archive/guidelines/components/steppers.html>
 @immutable
 class Step {
-  /// Creates a step for a [MyCustomStepper].
+  /// Creates a step for a [MyCustomStepperHafiz].
   ///
   /// The [title], [content], and [state] arguments must not be null.
   const Step({
@@ -125,16 +134,15 @@ class Step {
 ///
 ///  * [Step]
 ///  * <https://material.io/archive/guidelines/components/steppers.html>
-class MyCustomStepper extends StatefulWidget {
+class MyCustomStepperHafiz extends StatefulWidget {
   /// Creates a stepper from a list of steps.
   ///
   /// This widget is not meant to be rebuilt with a different list of steps
   /// unless a key is provided in order to distinguish the old stepper from the
   /// new one.
   ///
-  ///
   /// The [steps], [type], and [currentStep] arguments must not be null.
-  const MyCustomStepper({
+  const MyCustomStepperHafiz({
     Key key,
     @required this.steps,
     this.physics,
@@ -241,10 +249,10 @@ class MyCustomStepper extends StatefulWidget {
   final ControlsWidgetBuilder controlsBuilder;
 
   @override
-  _MyCustomStepperState createState() => _MyCustomStepperState();
+  _MyCustomStepperHafizState createState() => _MyCustomStepperHafizState();
 }
 
-class _MyCustomStepperState extends State<MyCustomStepper>
+class _MyCustomStepperHafizState extends State<MyCustomStepperHafiz>
     with TickerProviderStateMixin {
   List<GlobalKey> _keys;
   final Map<int, StepState> _oldStates = <int, StepState>{};
@@ -262,7 +270,7 @@ class _MyCustomStepperState extends State<MyCustomStepper>
   }
 
   @override
-  void didUpdateWidget(MyCustomStepper oldWidget) {
+  void didUpdateWidget(MyCustomStepperHafiz oldWidget) {
     super.didUpdateWidget(oldWidget);
     assert(widget.steps.length == oldWidget.steps.length);
 
@@ -317,6 +325,20 @@ class _MyCustomStepperState extends State<MyCustomStepper>
       case StepState.shipped:
         return Icon(
           Icons.airplanemode_active,
+          color: isDarkActive ? _kCircleActiveDark : _kCircleActiveLight,
+          size: 18.0,
+        );
+
+      case StepState.created:
+        return Icon(
+          Icons.support_agent,
+          color: isDarkActive ? _kCircleActiveDark : _kCircleActiveLight,
+          size: 18.0,
+        );
+
+      case StepState.engineer_arrived:
+        return Icon(
+          Icons.engineering,
           color: isDarkActive ? _kCircleActiveDark : _kCircleActiveLight,
           size: 18.0,
         );
@@ -527,6 +549,8 @@ class _MyCustomStepperState extends State<MyCustomStepper>
       case StepState.editing:
       case StepState.complete:
       case StepState.shipped:
+      case StepState.created:
+      case StepState.engineer_arrived:
       case StepState.delivered:
       case StepState.emptyCircle:
       case StepState.filledCircle:
@@ -550,6 +574,8 @@ class _MyCustomStepperState extends State<MyCustomStepper>
       case StepState.indexed:
       case StepState.editing:
       case StepState.shipped:
+      case StepState.created:
+      case StepState.engineer_arrived:
       case StepState.delivered:
       case StepState.complete:
       case StepState.emptyCircle:
@@ -764,7 +790,7 @@ class _MyCustomStepperState extends State<MyCustomStepper>
     assert(debugCheckHasMaterial(context));
     assert(debugCheckHasMaterialLocalizations(context));
     assert(() {
-      if (context.findAncestorWidgetOfExactType<MyCustomStepper>() != null)
+      if (context.findAncestorWidgetOfExactType<MyCustomStepperHafiz>() != null)
         throw FlutterError('Steppers must not be nested.\n'
             'The material specification advises that one should avoid embedding '
             'steppers within steppers. '
