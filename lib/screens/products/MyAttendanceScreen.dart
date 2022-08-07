@@ -26,7 +26,8 @@ import '../../widgets/MapsWidget.dart';
 
 class MyAttendanceScreen extends StatefulWidget {
   MyAttendanceScreen(this.supporticket, this.respartner_id);
-  final SupportTicketResPartner supporticket;
+  //final SupportTicketResPartner supporticket;
+  final supporticket;
   final respartner_id;
   @override
   _MyAttendanceScreenState createState() => _MyAttendanceScreenState();
@@ -134,15 +135,12 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> with SingleTick
         */    
       ),
 
-
-
-      
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 25.0),
         child: Container(
           height: 56.0,
           alignment: Alignment.center,
-          child: forfun(),
+          child: attendanceWidget(),
         ),
       ),
     );
@@ -665,7 +663,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> with SingleTick
     );
   }
 
-  Widget forfun() {
+  Widget attendanceWidget() {
   return Container(
      
     child: Builder(
@@ -677,18 +675,13 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> with SingleTick
             final watchCheckOutTime = ref.watch(attendanceProvider).checkOutTime;
             final watchLastKnownLocation = ref.read(lastknownlocationFutureProvider);
 
-            //if (widget.supporticket.check_in != ''){
-            //  ref.read(attendanceProvider)
-            //}
-
-          
-            return   watchCheckOutTime != '' || widget.supporticket.check_out != '' || checkout != '' || _isLocationDone != true //container will be return if one of these conditions are met.
+            return 
+            watchCheckOutTime != '' || widget.supporticket.check_out != '' || checkout != '' //|| _isLocationDone != true //container will be return if one of these conditions are met.
             ? Container() 
             : SlideAction(
               
-              text: 
-              
-              
+              text:
+
               widget.supporticket.check_in =='' && watchCheckInTime == ''   // AND if we found no data for check in (through provider) There should be data after we slide it to check in
               ?  'Slide to Check in' 
               :  watchCheckOutTime == '' || widget.supporticket.check_out == ''//AND if we found no data for check out after slide to check out
@@ -708,33 +701,42 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> with SingleTick
                 // if not check in, fill check in first, if already check in, then fill checkout. 
                 //firstly, we have to put the value of fetched data (if it exist) into attendance provider first. , this should be done at top of build method
               
+                
                 if (watchCheckInTime == '' && widget.supporticket.check_in =='') //|| widget.supporticket.check_in =='' && watchCheckInTime != ''  //&& widget.supporticket.check_in ==''
-                // ignore: unnecessary_statements
-                {
                   watchLastKnownLocation.when(
                     data:(value){
+                      
                       //let say we got the last known location, then we calculate if the last known location is in the circle radius or not
-                      var distance = GeolocatorPlatform.instance.distanceBetween( partnerLat, partnerLong, value.latitude, value.longitude);
-                      if (distance < 1000){ //TODO set the 1000 as shared preference OR, AND fetch the value of radius from website..supportzayd.settings. if there is no settings for it , go create one!
-                        //then we will refresh the location provider, so that we will get the latest location latitude and location address 
-                        //ref.refresh(attendanceProvider).checkInTime;
-                        //then we will update the value here
+                      /*But please take a big note, whenever we dont have partnerLat and partnerLong (the enduser might not assign it), we do not need to calculate the distance between radius, otherwise we will get null because we compare between a value of current and null partnerlat */
+                      if(partnerLat != null && partnerLong != null){
+                        var distance = GeolocatorPlatform.instance.distanceBetween( partnerLat, partnerLong, value.latitude, value.longitude);
+                          if (distance < 1000){ //TODO set the 1000 as shared preference OR, AND fetch the value of radius from website..supportzayd.settings. if there is no settings for it , go create one!
+                            //then we will refresh the location provider, so that we will get the latest location latitude and location address 
+                            //ref.refresh(attendanceProvider).checkInTime;
+                            //then we will update the value here
+                            ref.read(attendanceProvider.notifier).updateCheckInWithTicketId(
+                            widget.supporticket.ticket_id, currentlatitude.toString(), currentlongitude.toString(), fullAddress);
+                            return showDoneDialog();  
+                          }else{
+                            //else we throw error animation and reset the checkintime to ''
+                            showFailedCheckInDialog();
+                            ref.read(attendanceProvider).checkInTime = ''; 
+                          }
+                      }
+                      else if(partnerLat == null && partnerLong == null){
+                        // if partnerlat and partner long is null , Just let the user check in but no need to check for distance between radius and last known location
                         ref.read(attendanceProvider.notifier).updateCheckInWithTicketId(
                         widget.supporticket.ticket_id, currentlatitude.toString(), currentlongitude.toString(), fullAddress);
                         return showDoneDialog();  
-                      }else{
-                        //else we throw error animation and reset the checkintime to ''
-                        showFailedCheckInDialog();
-                        ref.read(attendanceProvider).checkInTime = ''; 
                       }
-                      },
+                    },
                     error: (e,stack) => {
                       showFailedDialog(e),
                     }, 
                     loading: () => showLoadingDialog(),
                   );               
-                }
-                  
+                
+
                 else if  (watchCheckOutTime == '' || widget.supporticket.check_out == '')
                 {
                 try{

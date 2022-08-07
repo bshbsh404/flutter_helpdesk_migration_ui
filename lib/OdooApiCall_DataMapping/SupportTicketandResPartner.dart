@@ -14,19 +14,25 @@ class SupportTicketResPartner{
   final String equipment_location;
   final String equipment_user;
   final String reported_by;
+  final String contact_num;
+  final String email;
+  final String department;
+  final String address;
   final String category_name;
   final String subcategory_name;
+  final String problem_name;
   final String open_case;
   final String itemname;
-
   
   const SupportTicketResPartner({
   
     this.ticket_number, this.ticket_id, this.assigned_user, 
     this.check_in, this.check_out, this.check_in_address, this.check_out_address,
     this.subject, this.created_date, this.rating, this.partner_name, this.partner_id,
-    this.equipment_location, this.equipment_user, this.reported_by,
-    this.category_name, this.subcategory_name,this.open_case, this.itemname
+    this.equipment_location, this.equipment_user, this.reported_by,this.contact_num,
+    this.email, this.department,this.address,
+    this.category_name, this.subcategory_name, this.problem_name,
+    this.open_case, this.itemname
 
   });
   static SupportTicketResPartner fromJson(Map<String, dynamic> json) => SupportTicketResPartner(
@@ -47,8 +53,13 @@ class SupportTicketResPartner{
     equipment_location: json['equipment_location'] == false ? json['equipment_location'] = '' : json['equipment_location'].toString(),
     equipment_user: json['user'] == false ? json['user'] = '' : json['user'].toString(),
     reported_by: json['person_name'] == false ? json['person_name'] = '' : json['person_name'].toString(),
+    contact_num: json['contact_num'] == false ? json['contact_num'] = '' : json['contact_num'].toString(),
+    email: json['email'] == false ? json['email'] = '' : json['email'].toString(),
+    department: json['department'] == false ? json['department'] = '' : json['department'].toString(),
+    address: json['address'] == false ? json['address'] = '' : json['address'].toString(),
     category_name: json['category'] == false || json['category'] == null? json['category'] = '' : json['category'][1].toString(),
     subcategory_name: json['sub_category_id'] == false || json['sub_category_id'] == null? json['sub_category_id'] = '' : json['sub_category_id'][1].toString(),
+    problem_name: json['problem'] == false || json['problem'] == null? json['problem'] = '' : json['problem'][1].toString(),
     open_case : json['open_case'] == false || json ['open_case'] == null ? json ['open_case'] = '' : json ['open_case'].toString(),
     itemname : json['item'] == false || json ['item'] == null ? json ['item'] = null : json ['item'][1].toString(),
   );

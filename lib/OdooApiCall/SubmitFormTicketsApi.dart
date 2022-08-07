@@ -5,10 +5,8 @@ import '../OdooApiCall_DataMapping/ToCheckIn_ToCheckOut_SupportTicket.dart';
 
   
 //might need to import session id here, to get user id, to get to filter.
-class ToCheckInTicketsApi {
-
+class SubmitFormTicketsApi {
     static Future <List<ToCheckInOutSupportTicket>> getAllSupportTickets(int offset, int limit) async{
-   
     var fetchTicketData = await globalClient.callKw({ //might need to be changed to widget.client.callkw later because of passing user id session.
       'model': 'website.supportzayd.ticket',
       'method': 'search_read',
@@ -16,14 +14,13 @@ class ToCheckInTicketsApi {
       'kwargs': {
         'context': {}, //because by default odoo fields.char return False when its null, therefore we change the default return '' rather than false
         //'domain': [ ['check_in','=','']],
-        'domain': [['check_in','=',null],['check_out','=',null]],
+        'domain': [['check_in','!=',null],['check_out','!=',null]],
         'fields': [],
         'order':'check_in desc', //still testing
         'offset':offset, //should change (increase/decrease one way) over time
          'limit':limit,
       },
-    });
-    
+    });   
     print ("offset"+ offset.toString());
     print ("limit"+ limit.toString());
     List listTicket = [];

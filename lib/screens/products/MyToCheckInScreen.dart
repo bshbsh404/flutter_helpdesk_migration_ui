@@ -26,12 +26,12 @@ import '../authentication/LoginScreen.dart';
 
 
 
-class MyTicketScreen extends StatefulWidget {
+class MyCheckInScreen extends StatefulWidget {
   @override
-  _MyTicketScreenState createState() => _MyTicketScreenState();
+  _MyCheckInScreenState createState() => _MyCheckInScreenState();
 }
 
-class _MyTicketScreenState extends State<MyTicketScreen> {
+class _MyCheckInScreenState extends State<MyCheckInScreen> {
   final scrollcontroller = ScrollController();
   List<ResPartner> partnerlist ;
   var _buttonValue;
@@ -39,32 +39,33 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
   @override
   void initState(){
     super.initState();
-    print ('find out whether sessionId exist!?' + globalClient.sessionId.id.toString());
-    print ('find out what the fuck is in globalsession '+ globalSession.toString());
    
   }
 
   @override
   void dispose() {
+  
     scrollcontroller.dispose();  
     super.dispose();
   }
+  
   @override
   Widget build(BuildContext context) {
+
+    scrollcontroller.addListener((){
+      double maxScroll= scrollcontroller.position.maxScrollExtent; //Maximum amount of distance the user can scroll in the scrolling axis.
+      double currentScroll= scrollcontroller.position.pixels; //Current position of the user in the scrolling view.
+      double delta=MediaQuery.of(context).size.width*0.20; //Amount of space from the bottom.
+      
+      if(maxScroll-currentScroll<=delta){
+        // make call to fetch next batch of items
+      }
+    });
 
     return Scaffold(
       backgroundColor: isDarkMode(context)
           ? darkBackgroundColor
           : Theme.of(context).backgroundColor,
-      /*appBar: buildAppBar(
-        context,
-        myTicketLabel,
-        onBackPress: () {
-          final CurvedNavigationBarState navState = getNavState();
-          navState.setPage(0);
-        },
-      ),
-      */
       body: SafeArea(
         child: ScrollConfiguration(
           behavior: RemoveScrollingGlowEffect(),
@@ -171,8 +172,8 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
         print('is the problem here before getpartnerimage?');
         print('can we get the supportticket_id here?' +supportticket.partner_id.toString());
         print ('unique' + unique);
-        
         var avatarUrl;
+
         if(supportticket.partner_id != null)
           avatarUrl= '${globalClient.baseURL}/web/image?model=res.partner&id=${supportticket.partner_id}&field=image_medium'; //&unique=$unique';
         else
@@ -265,7 +266,9 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                       ),
                                     ],
                                   ),
-      
+          
+                                  
+          
                                     supportticket.partner_name != ''? 
                                       Container(
                                         width: SizeConfig.screenWidth / 1.8,

@@ -15,8 +15,12 @@ import 'colors/Colors.dart';
 import 'notifier/dark_theme_provider.dart';
 import 'screens/launch/SplashScreen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
+  //WidgetsFlutterBinding.ensureInitialized();
+  //await Hive.initFlutter(); //hive needs to be initialized before calling for boxes so it is better to initialize it in main
   runApp(ProviderScope(child: MyApp())); //initiating flutter riverpod (wajib iniialize providerscope on the most top of app architecture,,)
 }
 

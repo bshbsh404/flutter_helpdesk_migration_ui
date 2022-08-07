@@ -62,6 +62,13 @@ dependencies:
   geocoding: ^2.0.4
   lottie: ^1.3.0
   permission_handler: ^9.2.0
+  connectivity_plus: ^2.3.5
+  hive_flutter: ^1.1.0
+  freezed: ^2.0.3+1
+  build_runner: ^2.1.11
+  freezed_annotation: ^2.0.3
+  riverpod_infinite_scroll: ^1.0.6
+  infinite_scroll_pagination: ^3.2.0
 
 dev_dependencies:
   flutter_test:

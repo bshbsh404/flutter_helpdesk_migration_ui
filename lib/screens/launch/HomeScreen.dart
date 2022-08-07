@@ -12,6 +12,7 @@ import 'package:shopping_app_ui/constant/Constants.dart';
 import 'package:shopping_app_ui/global_keys/navbar_key.dart';
 import 'package:shopping_app_ui/model/Product.dart';
 import 'package:shopping_app_ui/model/ProductInCart.dart';
+import 'package:shopping_app_ui/screens/products/MyTicketMainScreen.dart';
 import 'package:shopping_app_ui/screens/products/MyTicketScreen.dart';
 import 'package:shopping_app_ui/screens/settings/SettingsScreen.dart';
 import 'package:shopping_app_ui/util/RemoveGlowEffect.dart';
@@ -207,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen>
         return AllCategoriesScreen();
         break;
       case 2:
-        return MyTicketScreen();
+        return MyTicketMainScreen();
         break;
       case 3:
         return SettingsScreen(

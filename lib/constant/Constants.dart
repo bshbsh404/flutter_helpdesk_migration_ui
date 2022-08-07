@@ -153,7 +153,7 @@ const String helpLabel = 'Help Center';
 const String logoutLabel = 'Log Out';
 
 const String productDetailLabel = 'Product Details';
-const String detailsLabel = 'Product Details';
+const String detailsLabel = 'Ticket Details';
 const String brandLabel = 'Brand';
 const String typeLabel = 'Type';
 const String weightLabel = 'Weight';

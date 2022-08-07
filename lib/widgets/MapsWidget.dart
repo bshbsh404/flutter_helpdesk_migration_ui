@@ -226,12 +226,13 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
   }
   
 
-  Future<String> getAddress() async {
+  /*Future<String> getAddress() async {
     List<Placemark> placemark = await placemarkFromCoordinates(widget.partner_lat, widget.partner_long);
     String location = "${placemark[0].street},${placemark[0].subAdministrativeArea},${placemark[0].administrativeArea},${placemark[0].postalCode},${placemark[0].country}";
     
     return location;  
   }
+  */
 
 
   @override
@@ -241,8 +242,25 @@ class _MapsWidgetState extends State<MapsWidget> with AutomaticKeepAliveClientMi
     //this location is auto start on load widget.
     return Scaffold(
 
-        body: widget.partner_lat == null || widget.partner_long == null
-          ? Container() 
+        // so our logic is that if latitude is null, maybe it is still getting location right, but if both partner_lat and partner_long is null, then obviously we have finished getting the loading and we still get null, which means that partner_location hasnt been assigned
+        body: widget.partner_lat == null
+          ? Container(            
+              child: Text('Getting Location ...',
+                style: Theme.of(context).textTheme.headline4,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                ),
+          ) 
+
+          : widget.partner_lat == null && widget.partner_long == null
+          ? Container(            
+              child: Text("Couldn't get customer's location, please contact your system admin.",
+                style: Theme.of(context).textTheme.headline4,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                ),
+          ) 
+          
             : Container(
               width: MediaQuery.of(context).size.width,  // or use fixed size like 200
               height: MediaQuery.of(context).size.height*0.6, //set it to 0.8 for testing the slidinguppanel            
