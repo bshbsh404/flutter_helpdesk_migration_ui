@@ -26,7 +26,7 @@ final locationProvider = Provider<String>((ref) => 'location... ');
 
 
 class MapsWidget extends StatefulWidget {
-  final SupportTicketResPartner supportticket;
+  final supportticket;
   final partner_lat;
   final partner_long;
   MapsWidget(this.supportticket, this.partner_lat, this.partner_long, {Key key}): super(key: key);

@@ -4,29 +4,25 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:intl/intl.dart';
 import 'package:riverpod_infinite_scroll/riverpod_infinite_scroll.dart';  
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/ToCheckIn_ToCheckOut_SupportTicket.dart';
-import 'package:shopping_app_ui/colors/Colors.dart';
-import 'package:shopping_app_ui/constant/Constants.dart';
-import 'package:shopping_app_ui/riverpod_class/checkin_notifier_api.dart';
 import 'package:shopping_app_ui/riverpod_class/checkout_notifier_api.dart';
 import 'package:shopping_app_ui/screens/authentication/LoginScreen.dart';
-import 'package:shopping_app_ui/screens/products/MyAttendanceScreen.dart';
-import 'package:shopping_app_ui/screens/products/TicketDetailScreen.dart';
-import 'package:shopping_app_ui/util/RemoveGlowEffect.dart';
-import 'package:shopping_app_ui/util/Util.dart';
-import 'package:shopping_app_ui/util/size_config.dart';
-import 'package:shopping_app_ui/widgets/Styles.dart';
 import 'package:shopping_app_ui/widgets/TicketsListViewWidget.dart';
 
 //final PagingController<int, ToCheckInOutSupportTicket> _pagingController = PagingController(firstPageKey: 0, invisibleItemsThreshold: 10,);
     
-    class CheckOutTab extends StatelessWidget {
-      const CheckOutTab({Key key}) : super(key: key);      
+class CheckOutTab extends StatefulWidget {
+  const CheckOutTab({Key key}) : super(key: key);      
 
+  @override
+  State<CheckOutTab> createState() => _CheckOutTabState();
+}
+
+class _CheckOutTabState extends State<CheckOutTab> with AutomaticKeepAliveClientMixin{
       @override
       Widget build(BuildContext  context){
+        super.build(context);
         return Scaffold(
           //appBar: AppBar(),
           body: SafeArea(
@@ -44,9 +40,7 @@ import 'package:shopping_app_ui/widgets/TicketsListViewWidget.dart';
               title: Text(item.ticket_id+"\nmyindex:" +index.toString())
             );*/        
             },
-
-            
-            
+         
             pagedBuilder:(_pagingController,builder){
               //controller = PagingController(firstPageKey: , invisibleItemsThreshold: 5); //an attempt to change the threshold @hafizalwi ogos3     
               return PagedListView (
@@ -56,17 +50,17 @@ import 'package:shopping_app_ui/widgets/TicketsListViewWidget.dart';
                 dragStartBehavior: DragStartBehavior.down,
                 physics: ClampingScrollPhysics(
                   parent: AlwaysScrollableScrollPhysics(),
-                ),
-                
-                
+                ),               
               );
-            }
-              
+            }          
             ),
           ),
         );
-      }
-    }
+      }  
+        @override
+        // TODO: implement wantKeepAlive
+        bool get wantKeepAlive => true;
+}
 
     
 

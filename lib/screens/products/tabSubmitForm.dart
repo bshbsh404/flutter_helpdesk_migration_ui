@@ -23,11 +23,18 @@ import 'package:shopping_app_ui/widgets/TicketsListViewWidget.dart';
 
 //final PagingController<int, ToCheckInOutSupportTicket> _pagingController = PagingController(firstPageKey: 0, invisibleItemsThreshold: 10,);
     
-    class SubmitFormTab extends StatelessWidget {
-      const SubmitFormTab({Key key}) : super(key: key);      
+class SubmitFormTab extends StatefulWidget {
+  const SubmitFormTab({Key key}) : super(key: key); 
 
+@override
+State<SubmitFormTab> createState() => _SubmitFormTabState();
+
+}
+
+class _SubmitFormTabState extends State<SubmitFormTab> with AutomaticKeepAliveClientMixin{
       @override
       Widget build(BuildContext  context){
+        super.build(context);
         return Scaffold(
           //appBar: AppBar(),
           body: SafeArea(
@@ -67,7 +74,11 @@ import 'package:shopping_app_ui/widgets/TicketsListViewWidget.dart';
           ),
         );
       }
-    }
+      
+        @override
+        // TODO: implement wantKeepAlive
+        bool get wantKeepAlive => true;
+}
 
     
 

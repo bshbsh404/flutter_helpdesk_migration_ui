@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' as provider;
 import 'package:shopping_app_ui/screens/order_process/AddedToCartScreen.dart';
@@ -18,10 +19,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+
 void main() async {
   //WidgetsFlutterBinding.ensureInitialized();
   //await Hive.initFlutter(); //hive needs to be initialized before calling for boxes so it is better to initialize it in main
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(ProviderScope(child: MyApp())); //initiating flutter riverpod (wajib iniialize providerscope on the most top of app architecture,,)
+  
 }
 
 class MyApp extends StatefulWidget {

@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geolocator_platform_interface/src/models/position.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shopping_app_ui/OdooApiCall/ToCheckInTicketsApi.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/ResPartner.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicketandResPartner.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
@@ -68,7 +69,7 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> with SingleTick
     //first check if widget.respartner_id exist
     if (widget.respartner_id !='' )
     {
-      var listResPartner = await AllTicketsApi.getResPartner(widget.respartner_id);
+      var listResPartner = await ToCheckInTicketsApi.getResPartner(widget.respartner_id);
       print(widget.respartner_id);
       setState(() {
         for(int i=0;i<listResPartner.length;i++){

@@ -86,7 +86,7 @@ const String provideDetailsLabel =
 
 const String confirmPasswordLabel = 'Confirm Password';
 
-const String enterOtp = 'Enter 4-digit code we have sent at ';
+const String enterOtp = 'Enter 6-digit code we have sent at ';
 const String demoEmail = 'admin@sigmarectrix.com';
 const String demoPassword = 'Mib@193192987';
 const String demoName = 'Mathew';

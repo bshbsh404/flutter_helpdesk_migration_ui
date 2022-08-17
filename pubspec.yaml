@@ -69,6 +69,13 @@ dependencies:
   freezed_annotation: ^2.0.3
   riverpod_infinite_scroll: ^1.0.6
   infinite_scroll_pagination: ^3.2.0
+  datetime_picker_formfield: ^2.0.1
+  syncfusion_flutter_signaturepad: ^20.2.43
+  open_file: ^2.1.1
+  firebase_core: ^1.20.0
+  firebase_auth: ^3.6.2
+  pin_code_fields: ^7.4.0
+  path: ^1.8.1
 
 dev_dependencies:
   flutter_test:

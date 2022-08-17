@@ -12,7 +12,90 @@ import 'package:shopping_app_ui/util/size_config.dart';
 
 import 'SingleProduct.dart';
 
+Widget buildTextFieldExtraHeight(
+
+    BuildContext context,
+    TextEditingController controller,
+    TextCapitalization capitalization,
+    TextInputType textInputType,
+    TextInputAction textInputAction,
+    bool obscure,
+    Color cursorColor,
+    double borderRadius,
+    Color enabledBorderSideColor,
+    Color focusBorderSideColor,
+    Color borderSideColor,
+    Color fillColor,
+    int maxLength,
+    int maxLines,
+    String hint,
+    bool isEnabled,
+
+    {focusNode,
+    @required onChange,
+    @required onSubmit}) {
+  return TextField(
+    maxLines: maxLines,
+    autofocus: false,
+    obscureText: obscure,
+    controller: controller,
+    textCapitalization: capitalization,
+    keyboardType: textInputType,
+    textInputAction: textInputAction,
+    cursorColor: cursorColor,
+    maxLength: maxLength,
+    style: Theme.of(context).textTheme.bodyText2,
+    decoration: InputDecoration(
+      counterText: '',
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadius),
+        borderSide: BorderSide(
+          color: focusBorderSideColor,
+          width: 1,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadius),
+        borderSide: BorderSide(
+          color: enabledBorderSideColor,
+          width: 1,
+        ),
+      ),
+      fillColor: fillColor,
+      filled: true,
+      hintText: hint,
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadius),
+        borderSide: BorderSide(
+          color: enabledBorderSideColor,
+          width: 1,
+        ),
+      ),
+      hintStyle: Theme.of(context).textTheme.bodyText2,
+      contentPadding: EdgeInsets.only(
+        top: getProportionateScreenHeight(28),
+        left: getProportionateScreenHeight(28),
+      ),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15.0),
+          borderSide: BorderSide(
+            color: borderSideColor,
+            width: 3,
+          )),
+    ),
+    enabled: isEnabled,
+    focusNode: focusNode,
+    onChanged: (v) {
+      onChange(v);
+    },
+    onSubmitted: (v) {
+      onSubmit();
+    },
+  );
+}
+
 Widget buildTextField(
+
     BuildContext context,
     TextEditingController controller,
     TextCapitalization capitalization,

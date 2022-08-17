@@ -346,7 +346,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         maxWidth: 800,
         imageQuality: 50,
       );
-      cropImage(context, pickedFile.path ?? "");
+
+      if(pickedFile!= null)
+        cropImage(context, pickedFile?.path ?? "");
+
     } catch (e) {
       PlatformException exemption = e;
 
@@ -363,7 +366,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         imageQuality: 50,
       );
 
-      cropImage(context, pickedFile.path ?? "");
+      if(pickedFile!= null)
+        cropImage(context, pickedFile?.path     ?? "");
+
     } catch (e) {
       PlatformException exemption = e;
 
@@ -386,7 +391,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         IOSUiSettings(
           title: 'Crop your image',
         )],
-);
+      );
     if (croppedFile != null) {
       setState(() {
         imageFile = File(croppedFile.path ?? "");

@@ -6,13 +6,15 @@ import 'package:intl/intl.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
 import 'package:shopping_app_ui/constant/Constants.dart';
 import 'package:shopping_app_ui/screens/products/MyAttendanceScreen.dart';
+import 'package:shopping_app_ui/screens/products/MySubmitFormScreen.dart';
 import 'package:shopping_app_ui/screens/products/TicketDetailScreen.dart';
 import 'package:shopping_app_ui/util/Util.dart';
 import 'package:shopping_app_ui/widgets/Styles.dart';
 
 import '../util/size_config.dart';
 
-Widget buildTicketList(item,globalClient,context,index){       
+Widget buildTicketList(item,globalClient,context,index){ 
+        
               var avatarUrl;
               if(item.partner_id != null)
             avatarUrl= '${globalClient.baseURL}/web/image?model=res.partner&id=${item.partner_id}&field=image_medium'; //&unique=$unique';
@@ -257,7 +259,18 @@ Widget buildTicketList(item,globalClient,context,index){
                                     //});
                               }); 
                             }
-                             } ,
+                            
+                            else if (_buttonValue == 'SUBMIT FORM'){
+                              Navigator.push(
+                                context,
+                                OpenUpwardsPageRoute(child: MySubmitFormScreen(
+                                  item), 
+                                  direction: AxisDirection.up)).then((value){
+                              }); 
+                            }
+                            
+                          },
+
                           autofocus: true,
                           style: ButtonStyle(
                             elevation: MaterialStateProperty.resolveWith<double>(

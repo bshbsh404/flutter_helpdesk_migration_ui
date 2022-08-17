@@ -27,7 +27,6 @@ class ToCheckInOutSupportTicket {
   final String itemname;
 
   const ToCheckInOutSupportTicket({
-
     this.ticket_number, this.ticket_id, this.assigned_user, 
     this.check_in, this.check_out, this.check_in_address, this.check_out_address,
     this.subject, this.created_date, this.rating, this.partner_name, this.partner_id,
@@ -35,7 +34,6 @@ class ToCheckInOutSupportTicket {
     this.email, this.department,this.address,
     this.category_name, this.subcategory_name, this.problem_name,
     this.open_case, this.itemname
-    
   });
 
   static ToCheckInOutSupportTicket fromJson(Map<String, dynamic> json) => ToCheckInOutSupportTicket(
