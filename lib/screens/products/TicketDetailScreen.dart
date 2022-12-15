@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_app_ui/Data/ProductData.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicketandResPartner.dart';
+import 'package:shopping_app_ui/OdooApiCall_DataMapping/ToCheckIn_ToCheckOut_SupportTicket.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
 import 'package:shopping_app_ui/constant/Constants.dart';
 import 'package:shopping_app_ui/util/size_config.dart';
@@ -14,7 +15,7 @@ class TicketDetailScreen extends StatefulWidget {
   TicketDetailScreen(this.supportticket, this.respartner_id);
 
   //final SupportTicketResPartner supportticket;
-  final supportticket;
+  final ToCheckInOutSupportTicket supportticket;
   final respartner_id;
 
   @override

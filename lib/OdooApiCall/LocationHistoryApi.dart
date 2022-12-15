@@ -14,7 +14,7 @@ class LocationHistoryApi {
       'kwargs': {
         'context': {}, //because by default odoo fields.char return False when its null, therefore we change the default return '' rather than false
         'domain': [
-          ['check_in','!=',null],['check_out','!=',null],//['user_id','=',session.userId]
+          ['check_in','!=',''],['check_out','!=',''],//['user_id','=',session.userId]
           ],
         'fields': [
           'id',

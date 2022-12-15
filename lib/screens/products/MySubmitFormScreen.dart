@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shopping_app_ui/constant/Constants.dart';
@@ -14,11 +16,15 @@ import 'package:shopping_app_ui/screens/authentication/LoginScreen.dart';
 import 'package:shopping_app_ui/screens/authentication/VerifyAccountScreen.dart';
 import 'package:shopping_app_ui/screens/products/VerifyCustomerScreen.dart';
 import 'package:shopping_app_ui/util/size_config.dart';
+import 'package:shopping_app_ui/widgets/FullScreenPhotoView.dart';
 import 'package:shopping_app_ui/widgets/Styles.dart';
 import 'package:shopping_app_ui/util/Util.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
-import 'package:path/path.dart'; //due to importing path, a lot of our context have to be change to this.context ,, this is due to the problem of importing path package itself. please note this.
+import 'package:path/path.dart';
+import 'package:shopping_app_ui/widgets/multiselection.dart'; //due to importing path, a lot of our context have to be change to this.context ,, this is due to the problem of importing path package itself. please note this.
 
+
+List selectedList = []; //purposely declare as global so that we can access from widget multiselection, for better coding this should be done, but due to this is a rapid development this have to be done.
 
 class MySubmitFormScreen extends StatefulWidget {
   MySubmitFormScreen(this.supporticket);
@@ -30,6 +36,8 @@ class MySubmitFormScreen extends StatefulWidget {
 
   @override
   _MySubmitFormScreenState createState() => _MySubmitFormScreenState();
+  
+  void isSelected(bool isSelected) {}
 }
 
 class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
@@ -57,6 +65,26 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
   isDisplayErrorNotification = false;
   String errorMessage = '';
   var imagePicker = ImagePicker();
+  List imageFileList = [];
+  
+  //var _imagecontroller;
+
+  bool isSelected = false;
+  bool _checkboxagree=false;
+
+  void _checkboxConfirmation() {
+
+  }
+
+
+  void selectImages() async {
+    final List selectedImages = await imagePicker.pickMultiImage();
+    if (selectedImages.isNotEmpty) {
+      imageFileList.addAll(selectedImages);
+    }
+    print("Image List Length:" + imageFileList.length.toString());
+    setState((){});
+  }  
 
   Future showImagePickerDialog(BuildContext context) async {
     showDialog(
@@ -69,6 +97,7 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
             onPressed: () async {
               Navigator.of(context).pop();
               await pickImageFromCamera(context);
+              //selectImages();
             },
             child: Text(
               camera,
@@ -81,7 +110,8 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
           ElevatedButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              await pickImageFromGallery(context);
+              //await pickImageFromGallery(context);
+              selectImages();
             },
             child: Text(
               gallery,
@@ -98,15 +128,16 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
 
   Future pickImageFromCamera(BuildContext context) async {
     try {
-      final pickedFile = await imagePicker.getImage(
+      final pickedFile = await imagePicker.pickImage(
         source: ImageSource.camera,
         maxHeight: 800,
         maxWidth: 800,
-        imageQuality: 50,
+        imageQuality: 100,
       );
 
       if(pickedFile!= null)
         cropImage(context, pickedFile?.path ?? "");
+        imageFileList.add(pickedFile);
 
     } catch (e) {
       PlatformException exemption = e;
@@ -117,11 +148,11 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
 
   Future pickImageFromGallery(BuildContext context) async {
     try {
-      final pickedFile = await imagePicker.getImage(
+      final pickedFile = await imagePicker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 800,
         maxHeight: 800,
-        imageQuality: 50,
+        imageQuality: 100,
       );
 
       if(pickedFile!= null)
@@ -135,7 +166,6 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
   }
 
   Future cropImage(BuildContext context, String filePath) async {
-
     CroppedFile croppedFile = await ImageCropper().cropImage(
         sourcePath: filePath,
         aspectRatioPresets: setAspectRatios(),
@@ -204,15 +234,15 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
   Widget build(BuildContext context) {
     final _format = DateFormat("yyyy-MM-dd HH:mm:ss");
     
-
-
     return Scaffold(
       backgroundColor: isDarkMode(context)
           ? darkBackgroundColor
           : Theme.of(context).backgroundColor,
-      appBar: buildAppBar(context, "Job Details", onBackPress: () {
+      appBar: selectedList.length < 1 ?
+      buildAppBar(context, "Job Details", onBackPress: () {
         Navigator.pop(context);
-      }),
+      })
+      : getAppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Stack(
@@ -229,8 +259,11 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
                     padding: const EdgeInsets.only(
                         left: 22.0, right: 22.0, top: 8, bottom: 10),
                     child: Column(
+                      
                       children: [
                         Column(
+                          mainAxisSize: MainAxisSize.max,
+                          //crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Visibility(
                               visible: isDisplayErrorNotification,
@@ -282,8 +315,6 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
                         SizedBox(
                           height: 10,
                         ),
-
-                  
                         Container(
                           alignment: Alignment.centerLeft,
                           child: Text(
@@ -453,8 +484,22 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
                       InkWell(
                         onTap: () => showImagePickerDialog(context),
                         child: Container(
-                          child:                         
-                          imageFile != null ? 
+                          child:  buildButtonWithSuffixIcon(
+                            "Upload",
+                            Icons.upload_file,
+                            true,
+                            isDarkMode(this.context) ? primaryColorDark : primaryColor,
+                            isDarkMode(this.context)
+                                ? Colors.white.withOpacity(0.8)
+                                : Colors.white,
+                            2,
+                            2,
+                            8,
+                            onPressed: () {
+                              showImagePickerDialog(context);
+                            },
+                          ), 
+                          /*imageFile != null ? 
                             Image.file(
                               imageFile,
                               width: 400,
@@ -462,13 +507,137 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
                             )
                           :
                           Image.asset(
-                            '$baseImagePath/profile.png',
+                            '$baseImagePath/upload_image.png',
                             height: 200,
                             width: 200,
                             //fit: BoxFit.cover,
                           )
+                          */
                         ),  
+                      ),
+                    
+                      SizedBox(height: 20,),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Chosen Images",
+                            style: Theme.of(context).textTheme.subtitle2,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                    
+                        /*
+                        ConstrainedBox (        
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height,
+                            maxWidth: MediaQuery.of(context).size.width,   
+                            minHeight: 200                        
+                            ),
+                          child: PhotoViewGallery.builder(        
+                            pageController: _imagecontroller,
+                            itemCount: imageFileList.length,
+                            scrollPhysics: BouncingScrollPhysics(),      
+                            builder: (BuildContext context, int index) {
+                              
+                              return PhotoViewGalleryPageOptions(
+                                
+                                minScale: PhotoViewComputedScale.contained * 0.8,
+                                maxScale: PhotoViewComputedScale.covered * 2,
+                                imageProvider:
+                                AssetImage(
+                                imageFileList != null ?
+                                  imageFileList[index].path
+                                  //Image.file(File(imageFileList[index].path), fit: BoxFit.cover,)
+                                  : '$productImagesPath/demo_image.png'
                       )
+                              );
+                            },
+                            loadingBuilder: (context, event) => Center(
+                              child: Container(
+                                width: 20.0,
+                                height: 20.0,
+                                child: CircularProgressIndicator(
+                                value: event == null
+                                    ? 0
+                                    : event.cumulativeBytesLoaded /
+                                        event.expectedTotalBytes,
+                                ),
+                              ),
+                            ),
+                            backgroundDecoration: BoxDecoration(
+                              color: Colors.transparent,
+                            ),
+                          ),
+                        ),
+                        */
+                    
+                      
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),                    
+                        child: InkWell(
+                          onLongPress:() {
+                            setState(() {
+                              isSelected = !isSelected;
+                              widget.isSelected(isSelected);
+                            });
+                          },
+                          child: 
+
+                          GridView.builder(
+                            
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: imageFileList.length,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3),
+                            itemBuilder: (BuildContext context, int index) {
+
+                              return GridItem(
+                                item: imageFileList[index].path,//Image.file(File(imageFileList[index].path), fit: BoxFit.cover,),
+                                isSelected: (bool value) {
+                                  setState(() {
+                                    if (value) {
+                                      selectedList.add(imageFileList[index]);
+                                    } else {
+                                      selectedList.remove(imageFileList[index]);
+                                    }
+                                  });
+                                  print("$index : $value");
+                                },
+                                key:  Key(imageFileList[index].toString())                                 
+                                //Key(imageFileList[index].rank.toString())                            
+                              );
+                              //return Image.file(File(imageFileList[index].path), fit: BoxFit.cover,);
+                            }),
+                        ),
+                      ),
+
+                      SizedBox(height: 30,),
+                        Container(
+                          child: Row(
+                          children: [
+                            Material(
+                              child: Checkbox(
+                                value: _checkboxagree,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _checkboxagree = value ?? false;
+                                  });
+                                },
+                              ),
+                            ),
+                            Expanded(
+                              child: const Text(
+                                'I have read and confirm my job details',
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: true,
+                                maxLines: 2,
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 30)                      
                         //FlutterLogo(size: 160)               
                       ],
 
@@ -536,10 +705,8 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
 
   }
 
-
-
     Widget buildProblem() {
-    return buildTextFieldExtraHeight(
+    return buildTextFormFieldExtraHeightRequired(
         this.context,
         problem,
         TextCapitalization.words,
@@ -562,8 +729,6 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
         onChange: (value) {},
         onSubmit: () {});
   }
-
-
 
   Widget buildValidUntil() {
     return buildTextField(
@@ -616,7 +781,7 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
   }
 
   Widget buildResolutionName() {
-    return buildTextFieldExtraHeight(
+    return buildTextFormFieldExtraHeightRequired(
         this.context,
         resolution,
         TextCapitalization.words,
@@ -681,13 +846,11 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
   }
 
   Widget buildSuccessDialog() {
-    return buildDialog(
+    return buildDialogWithAnimation(
       this.context,
-      cardAddedSuccessLabel,
+      "'Jobs done!'- Bob The Builder",
       goBackLabel,
-      isDarkMode(this.context)
-          ? '$darkIconPath/card.svg'
-          : '$baseImagePath/card.svg',
+      'assets/json/lottieJson/trophy-animation.json',
       onTap: () {
         SchedulerBinding.instance.addPostFrameCallback(
           (_) {
@@ -697,6 +860,33 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
       },
     );
   }
+
+  getAppBar() {
+    return AppBar(
+      title: Text(selectedList.length < 1
+          ? "Multi Selection"
+          : "${selectedList.length} item selected"),
+      actions: <Widget>[
+        selectedList.length < 1
+            ? Container()
+            : InkWell(
+                onTap: () {
+                  setState(() {
+                    for (int i = 0; i < selectedList.length; i++) {
+                      imageFileList.remove(selectedList[i]);
+                    }
+                    //selectedList = [];//List();
+                    selectedList.clear();
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(Icons.delete),
+                ))
+        ],
+      );
+    }
+  
 
   Widget buildSBottomButtons() {
     return Row(
@@ -735,11 +925,7 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
               8,
               onPressed: () {
                 checkValidations(); //should make if no error, then navigate push later for real scene
-                saveToDatabase(problem,resolution,followUp, imageFile, widget.supporticket.ticket_id); //save to backend
-                Navigator.push(
-                              this.context,
-                              OpenUpwardsPageRoute(child: VerifyCustomerScreen(), 
-                                direction: AxisDirection.up));
+
               },
             ),
           ),
@@ -748,32 +934,62 @@ class _MySubmitFormScreenState extends State<MySubmitFormScreen> {
     );
   }
 
+  void showSnackBarText(String text) {
+    ScaffoldMessenger.of(this.context).removeCurrentSnackBar();
+    ScaffoldMessenger.of(this.context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+      ),
+    );
+  }
+
   
 
   void checkValidations() {
-    if (followUp.text.isEmpty) {
-      showErrorNotification('Please enter card number');
-    } else if (followUp.text.length != 16) {
-      showErrorNotification('Please enter 16 digit in card number');
+    if (problem.text.isEmpty) {
+      showErrorNotification('Please enter remarks for problem');
+    } else if (resolution.text.isEmpty) {
+      showErrorNotification('Please enter remarks for resolution');
     //} else if (selectedCardExpiryDate == null) {
     //  showErrorNotification('Please select card expiry date');
     //} else if (cvv.text.isEmpty) {
     //  showErrorNotification('Please select country');
-    } else if (resolution.text.isEmpty) {
-      showErrorNotification('Please enter resolution');
-    } else {
+    } //else if (resolution.text.isEmpty) {
+      //showErrorNotification('Please enter resolution');
+    else {
       if (isDisplayErrorNotification == true) {
         hideErrorNotification();
       }
       hideKeyboard(this.context);
+
+      if (_checkboxagree == true){
+        try{
+        saveToDatabase(problem,resolution,followUp, imageFileList, widget.supporticket.ticket_id, this.context); //save to backend
       setState(() {
         displaySuccessDialog = true;
       });
+        
+        }catch(e){
+
+          buildErrorNotification(
+                "Failed saving data, please try again",
+                isDarkMode(this.context) ? Colors.red[900] : pinkishColor,
+              );
+          return print(e.toString());
+        }
+        /*setState(() {
+          displaySuccessDialog = true;
+        });
+        */
+      } 
+      else if(_checkboxagree != true)
+        showSnackBarText("Please ensure you tick the confirmation checkbox!");   
     }
   }
 }
 
-void saveToDatabase(problem,resolution,followup,imageFile, ticket_id){
+
+Future<void> saveToDatabase(problem,resolution,followup,imageFileList, ticket_id, context) async {
 
     //DateTime resolutionTimerDate = new DateFormat("yyyy-MM-dd hh:mm:ss").parse(resolutionTimer.text);
     //resolutionTimerDate.subtract(Duration(hours: 8)); // we subtract 8 hours to convert MYT to GMT
@@ -783,7 +999,8 @@ void saveToDatabase(problem,resolution,followup,imageFile, ticket_id){
     String comment = "Problem: "+problem.text+"\nResolution: "+resolution.text+"\nFollow-up: "+followup.text;
     //var attachment // for attachmenment we will upload the proof of work picture
         
-    globalClient.callKw({
+    await globalClient.callKw({
+      
     'model': 'website.supportzayd.ticket',
     'method': 'write',
     'args': [ 
@@ -798,32 +1015,23 @@ void saveToDatabase(problem,resolution,followup,imageFile, ticket_id){
     'kwargs': {},
     });
 
+    if(imageFileList.isNotEmpty){
 
-    //this is because imagile is an optional field.
-
-    
-    print("if imagefile is null print this");
-
-    if(imageFile != null){
-
-      print("before globalclient call imagefile ");
-
-      List<int> imageBytes = imageFile.readAsBytesSync();
+      for(int i=0;i<imageFileList.length;i++){
+        List<int> imageBytes = await imageFileList[i].readAsBytes();
       String imageBase64 = base64Encode(imageBytes);
       //String fileName = imageFile.path.split(Platform.pathSeparator).last;
       // ignore: unnecessary_statements 
       //print("file name after convert? : "+imageFile.toString());
-      final _filename = basename(imageFile.path);
-      final _extension = extension(imageFile.path);
 
-
+        //final _filename = basename(imageFile.path);
+        final _extension = extension(imageFileList[i].path);
       DateTime now = new DateTime.now();
       DateTime date = new DateTime(now.year, now.month, now.day, now.hour, now.minute);
-      
-
       //imageFile.rename ("TicketImage"+DateTime.now().toString() +_extension.toString());
 
-      globalClient.callKw({
+        try{
+        await globalClient.callKw({
         'model': 'ir.attachment',
         'method': 'create',
         'args': [
@@ -842,6 +1050,25 @@ void saveToDatabase(problem,resolution,followup,imageFile, ticket_id){
         'kwargs': {
         },
       });
-      print("after globalclient call imagefile ");     
+        }catch(e){
+
+          return Future.error(e.toString());
     }
+        
+
+        print("success uploading images[number: $i] "); 
 }
+
+    }
+
+    
+    /*
+      Navigator.push(
+        context,
+        OpenUpwardsPageRoute(child: VerifyCustomerScreen(), 
+        direction: AxisDirection.up)
+      );
+    */
+}
+
+

@@ -9,6 +9,7 @@ import 'package:shopping_app_ui/screens/products/MyToCheckInScreen.dart';
 import 'package:shopping_app_ui/screens/products/tabCheckIn.dart';
 import 'package:shopping_app_ui/screens/products/tabCheckOut.dart';
 import 'package:shopping_app_ui/screens/products/tabSubmitForm.dart';
+import 'package:shopping_app_ui/screens/products/tabSubmitJobDetails.dart';
 import 'package:shopping_app_ui/util/Util.dart';
 import 'package:shopping_app_ui/util/size_config.dart';
 import 'package:shopping_app_ui/widgets/Styles.dart';
@@ -29,7 +30,7 @@ class _MyTicketMainScreenState extends ConsumerState with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _controller = TabController(length: 4, vsync: this );
+    _controller = TabController(length: 5, vsync: this );
   }
 
   @override
@@ -44,7 +45,7 @@ class _MyTicketMainScreenState extends ConsumerState with SingleTickerProviderSt
     return SafeArea(
       child: DefaultTabController(
 
-        length: 4,
+        length: 5,
         child: Scaffold(
           backgroundColor: isDarkMode(context)
           ? darkBackgroundColor
@@ -82,9 +83,8 @@ class _MyTicketMainScreenState extends ConsumerState with SingleTickerProviderSt
                 Tab(text: 'All '),
                 Tab(text: 'Check In'),
                 Tab(text: 'Check Out'),
+                Tab(text: 'Submit Job Details'),   
                 Tab(text: 'Submit Form'),
-                
-                
               ],
             ),
           ),
@@ -95,8 +95,8 @@ class _MyTicketMainScreenState extends ConsumerState with SingleTickerProviderSt
               MyTicketScreen(),
               CheckInTab(),
               CheckOutTab(),
-              SubmitFormTab()
-
+              SubmitJobDetailsTab(),
+              SubmitFormTab(),
               //MyCheckInScreen(),
               //Icon(Icons.flight, size: 350),
               //Icon(Icons.flight, size: 350)

@@ -8,6 +8,7 @@ import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:shopping_app_ui/Data/ProductData.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/ResPartner.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicketandResPartner.dart';
+import 'package:shopping_app_ui/OdooApiCall_DataMapping/ToCheckIn_ToCheckOut_SupportTicket.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
 import 'package:shopping_app_ui/constant/Constants.dart';
 import 'package:shopping_app_ui/model/Product.dart';
@@ -86,7 +87,6 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                     case ConnectionState.none:
                       break;
                                   
-
                     case ConnectionState.active: //this is for stream so, futurebuilder does not need to use this.
                       // TODO: Handle this case.
                     break;
@@ -97,7 +97,6 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                         tickets);
                       }
                       else if (snapshot.hasError){
-
                         return Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -156,7 +155,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
   }
 
   Widget buildSupportTickets(//List<dynamic>respartners,
-  List<SupportTicketResPartner> supporttickets) =>
+  List<ToCheckInOutSupportTicket> supporttickets) =>
 
     ListView.builder(
       shrinkWrap: true,
@@ -403,7 +402,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                       child:      
                       ElevatedButton(     
                         onPressed:(){
-                          if (_buttonValue != 'SUBMIT FORM')
+                          if (_buttonValue == 'CHECK IN' || _buttonValue == 'CHECK OUT')
                           {
                             Navigator.push(
                               context,
@@ -415,7 +414,7 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                                   });
                             }); 
                           }
-                          else if (_buttonValue == 'SUBMIT FORM'){
+                          else if (_buttonValue == 'SUBMIT JOB DETAILS'){
                             Navigator.push(
                               context,
                               OpenUpwardsPageRoute(child: MyAttendanceScreen(
@@ -427,8 +426,18 @@ class _MyTicketScreenState extends State<MyTicketScreen> {
                             }); 
 
                           }
+                          else if (_buttonValue == 'SUBMIT CMFORM'){
+                            Navigator.push(
+                              context,
+                              OpenUpwardsPageRoute(child: MyAttendanceScreen(
+                                supportticket, respartner_id), 
+                                direction: AxisDirection.up)).then((value){
+                                  setState((){
 
+                                  });
+                            }); 
 
+                          }
                         } ,
                         autofocus: true,
                         style: ButtonStyle(

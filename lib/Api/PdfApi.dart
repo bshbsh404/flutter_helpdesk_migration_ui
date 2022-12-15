@@ -2,13 +2,14 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
+import 'package:shopping_app_ui/OdooApiCall_DataMapping/ToCheckIn_ToCheckOut_SupportTicket.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 import '../OdooApiCall_DataMapping/SupportTicket.dart';
 
 class PdfApi {
   static Future<File> generatePDF(
-    { ByteData imageSignature, supportTicket}
+    { ByteData imageSignature, supportTicket, ToCheckInOutSupportTicket supportticket}
   
   
   ) async {

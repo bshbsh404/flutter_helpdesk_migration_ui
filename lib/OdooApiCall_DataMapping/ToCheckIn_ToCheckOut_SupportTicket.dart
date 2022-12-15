@@ -25,6 +25,8 @@ class ToCheckInOutSupportTicket {
   final String problem_name;
   final String open_case;
   final String itemname;
+  final String close_comment;
+  final String cmform_number;
 
   const ToCheckInOutSupportTicket({
     this.ticket_number, this.ticket_id, this.assigned_user, 
@@ -33,7 +35,7 @@ class ToCheckInOutSupportTicket {
     this.equipment_location, this.equipment_user, this.reported_by,this.contact_num,
     this.email, this.department,this.address,
     this.category_name, this.subcategory_name, this.problem_name,
-    this.open_case, this.itemname
+    this.open_case, this.itemname, this.close_comment, this.cmform_number
   });
 
   static ToCheckInOutSupportTicket fromJson(Map<String, dynamic> json) => ToCheckInOutSupportTicket(
@@ -62,6 +64,8 @@ class ToCheckInOutSupportTicket {
     subcategory_name: json['sub_category_id'] == false || json['sub_category_id'] == null? json['sub_category_id'] = '' : json['sub_category_id'][1].toString(),
     problem_name: json['problem'] == false || json['problem'] == null? json['problem'] = '' : json['problem'][1].toString(),
     open_case : json['open_case'] == false || json ['open_case'] == null ? json ['open_case'] = '' : json ['open_case'].toString(),
-    itemname : json['item'] == false || json ['item'] == null ? json ['item'] = null : json ['item'][1].toString(),
+    itemname : json['item'] == false || json ['item'] == null ? json ['item'] = '' : json ['item'][1].toString(),
+    close_comment : json['close_comment'] == false || json ['close_comment'] == null ? json ['close_comment'] = '' : json ['close_comment'].toString(),
+    cmform_number : json['cmform'] == false || json ['cmform'] == null ? json ['cmform'] = '' : json ['cmform'].toString(),
   );   
 }

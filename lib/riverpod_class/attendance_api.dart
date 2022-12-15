@@ -8,9 +8,9 @@ class ClassAttendanceProvider extends ChangeNotifier{
   String checkInTime = '';
   String checkOutTime = '';
   //String checkInMalaysiaTime;
-  updateCheckInWithTicketId(String ticketId, /*String time*/String latitude, String longitude, String address){
+  updateCheckInWithTicketId(String ticketId, /*String time*/String latitude, String longitude, String address) async {
     String time = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now().toUtc()); //change to utc because odoo database accepts understand datetime from odoo as UTC format only
-    globalClient.callKw({
+    await globalClient.callKw({
     'model': 'website.supportzayd.ticket',
     'method': 'write',
     'args': [ 
@@ -34,9 +34,9 @@ class ClassAttendanceProvider extends ChangeNotifier{
     notifyListeners();
   }
 
-  updateCheckOutWithTicketId(String ticketId, /*String time*/String latitude, String longitude, String address){
+  updateCheckOutWithTicketId(String ticketId, /*String time*/String latitude, String longitude, String address) async {
     String time = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now().toUtc()); //change to utc because odoo database accepts understand datetime from odoo as UTC format only
-    globalClient.callKw({
+    await globalClient.callKw({
     'model': 'website.supportzayd.ticket',
     'method': 'write',
     'args': [ 

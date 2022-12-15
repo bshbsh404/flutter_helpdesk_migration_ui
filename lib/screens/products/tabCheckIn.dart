@@ -47,7 +47,8 @@ class _CheckInTabState extends State<CheckInTab> with AutomaticKeepAliveClientMi
                 pagingController: _pagingController, 
                 builderDelegate: builder,             
                 dragStartBehavior: DragStartBehavior.down,
-                physics: ClampingScrollPhysics(),
+                physics: ClampingScrollPhysics( parent: AlwaysScrollableScrollPhysics(),
+                ),
                 addAutomaticKeepAlives: true,
              
               );

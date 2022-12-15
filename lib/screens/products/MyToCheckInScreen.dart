@@ -8,6 +8,7 @@ import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:shopping_app_ui/Data/ProductData.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/ResPartner.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicketandResPartner.dart';
+import 'package:shopping_app_ui/OdooApiCall_DataMapping/ToCheckIn_ToCheckOut_SupportTicket.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
 import 'package:shopping_app_ui/constant/Constants.dart';
 import 'package:shopping_app_ui/model/Product.dart';
@@ -157,7 +158,7 @@ class _MyCheckInScreenState extends State<MyCheckInScreen> {
   }
 
   Widget buildSupportTickets(//List<dynamic>respartners,
-  List<SupportTicketResPartner> supporttickets) =>
+  List<ToCheckInOutSupportTicket> supporttickets) =>
 
     ListView.builder(
       shrinkWrap: true,

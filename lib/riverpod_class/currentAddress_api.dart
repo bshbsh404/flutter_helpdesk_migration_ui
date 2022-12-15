@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../riverpod_model/address.dart';
 import 'currentLocation_api.dart';
 
@@ -14,6 +15,22 @@ final currentaddressFutureProvider = FutureProvider<List<Placemark>>((ref) async
   double latitude;
   double longitude;
 
+
+
+  void _getGeoLocatorPermission() async {
+    bool permissionGranted;
+
+    if (await Permission.location.request().isGranted) {
+      permissionGranted = true;
+    } else if (await Permission.location.request().isPermanentlyDenied) {
+      throw('location.request().isPermanentlyDenied');
+    } else if (await Permission.location.request().isDenied) {
+      permissionGranted = false;
+      throw('location.request().isDenied');
+    }   
+  }
+
+  /*
     void getGeoLocatorPermission() async{
     bool serviceEnabled;
     LocationPermission permission;
@@ -36,11 +53,12 @@ final currentaddressFutureProvider = FutureProvider<List<Placemark>>((ref) async
     }
     print(permission);
   }
+  */
 
   try{
-    getGeoLocatorPermission();
-    bool serviceEnabledLocation;
-    serviceEnabledLocation = await Geolocator.isLocationServiceEnabled();
+    _getGeoLocatorPermission();
+    //bool serviceEnabledLocation;
+    //serviceEnabledLocation = await Geolocator.isLocationServiceEnabled();
   //if(serviceEnabledLocation == true){
     final currentlocation = await ref.watch(currentlocationFutureProvider.future);
     latitude = currentlocation.latitude;

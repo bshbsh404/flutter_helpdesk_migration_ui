@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:shopping_app_ui/OdooApiCall_DataMapping/ToCheckIn_ToCheckOut_SupportTicket.dart';
 import 'package:shopping_app_ui/colors/Colors.dart';
 import 'package:shopping_app_ui/constant/Constants.dart';
 import 'package:shopping_app_ui/screens/launch/HomeScreen.dart';
@@ -14,6 +15,10 @@ import 'package:shopping_app_ui/widgets/Styles.dart';
 import 'package:shopping_app_ui/util/Util.dart';
 
 class VerifyCustomerScreen extends StatefulWidget {
+  final ToCheckInOutSupportTicket supportticket;
+
+  VerifyCustomerScreen({Key key, this.supportticket}) : super(key: key);
+  
   @override
   _VerifyCustomerScreenState createState() => _VerifyCustomerScreenState();
 }
@@ -399,7 +404,6 @@ class _VerifyCustomerScreenState extends State<VerifyCustomerScreen> {
                         }
                         verifyPhone(demoPhone);
                         startTimer();
-
                       },
                     );
                 },
@@ -480,6 +484,7 @@ class _VerifyCustomerScreenState extends State<VerifyCustomerScreen> {
     }
   }
 
+  /*
   void checkValidations() {
     if (otpDigit1.text.isEmpty ||
         otpDigit2.text.isEmpty ||
@@ -498,13 +503,14 @@ class _VerifyCustomerScreenState extends State<VerifyCustomerScreen> {
           Navigator.push(
             context,
             
-            OpenUpwardsPageRoute(child: SignatureScreen(), 
+            OpenUpwardsPageRoute(child: MySignatureScreen(), 
               direction: AxisDirection.right)
           );
         },
       );
     }
   }
+  */
 
   void startTimer() {
     const oneSec = const Duration(seconds: 1);
@@ -579,7 +585,7 @@ class _VerifyCustomerScreenState extends State<VerifyCustomerScreen> {
     //.whenComplete(() {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const SignatureScreen(),
+          builder: (context) => MySignatureScreen(supportticket:widget.supportticket),
         ),
       );
     //});

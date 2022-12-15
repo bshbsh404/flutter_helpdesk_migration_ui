@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/ResPartner.dart';
 import 'package:shopping_app_ui/OdooApiCall_DataMapping/SupportTicketandResPartner.dart';
+import 'package:shopping_app_ui/OdooApiCall_DataMapping/ToCheckIn_ToCheckOut_SupportTicket.dart';
 import '../OdooApiCall_DataMapping/SupportTicket.dart';
 import '../screens/authentication/LoginScreen.dart';
 
@@ -9,7 +10,7 @@ import '../screens/authentication/LoginScreen.dart';
 //might need to import session id here, to get user id, to get to filter.
 class AllTicketsApi {
   
-    static Future <List<SupportTicketResPartner>> getAllSupportTickets() async{
+    static Future <List<ToCheckInOutSupportTicket>> getAllSupportTickets() async{
     try{
       var fetchTicketData = await globalClient.callKw({ //might need to be changed to widget.client.callkw later because of passing user id session.
         'model': 'website.supportzayd.ticket',
@@ -24,9 +25,8 @@ class AllTicketsApi {
       List listTicket = [];
       listTicket = fetchTicketData; //fetchticketdata(var dynamic) is assigned to List, 
       print ('Get All Support Ticket: '+ fetchTicketData.toString());
-      return listTicket.map((json) => SupportTicketResPartner.fromJson(json)).toList();  
+      return listTicket.map((json) => ToCheckInOutSupportTicket.fromJson(json)).toList();  
       } catch(e){
-          
         return Future.error(e.toString());
       }
     }
@@ -51,7 +51,6 @@ class AllTicketsApi {
     //listTicket =  fetchTicketData.map((json) => ClosedClosedSupportTicket.fromJson(json)).toList(); //convert our json data from odoo to list.
     return listTicket.map((json) => SupportTicket.fromJson(json)).toList().length;
   }
-
   /*
       static Future<List<SupportTicketResPartner>> getAllSupportTicketsResPartner () async {
         //List combineddata = [];  //create an empty list to add them all later

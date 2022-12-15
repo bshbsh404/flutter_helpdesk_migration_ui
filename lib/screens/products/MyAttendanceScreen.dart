@@ -60,7 +60,6 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> with SingleTick
   String fullAddress;
   // isLocationDone is used to set flag to true after we manage to fetch location,.. this flag is to be used for slide to check in, if no location is get/error, slide to checkin will appear as container, as sliding it might cause unknown bugs especially on singletickercancel error.
   // another thing is to be proper, we will only show slide to checkin after location is get, because this will prevent user from doing mistakes, in easy word, it makes it more user friendly.
-  bool _isLocationDone;
 
   AnimationController controller; //animation upon slide to check in
 
@@ -637,7 +636,6 @@ class _MyAttendanceScreenState extends State<MyAttendanceScreen> with SingleTick
                       data:(value){
                       currentlatitude = value.latitude; //value to be inserted when slide to check in
                       currentlongitude = value.longitude; //same as currentlatitude line
-                      _isLocationDone = true;
                         return Text(
                           value.toString(), style: Theme.of(context).textTheme.subtitle2.copyWith(
                           fontWeight: Theme.of(context).textTheme.subtitle2.fontWeight
